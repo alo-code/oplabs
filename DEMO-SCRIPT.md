@@ -20,9 +20,10 @@ above the 0.8 floor and are refused anyway. *"Trust isn't a vibe; it's a gate."*
 workflow a non-engineer can edit) + a tested TS trust core mirrored into a Code node. One grounded
 brief → two framings (eng + BD). Show the n8n canvas.
 
-**9:30 — Crawl → Walk → Run (4 min).** The Versions page. Each stage removes a different bottleneck
-(laptop/trust → eng-capacity → governance); you move on a signal, not a date. The trust core is the
-through-line.
+**9:30 — Crawl → Walk → Run → Sprint (4 min).** The Versions page. Each stage removes a different
+bottleneck (laptop/trust → eng-capacity → governance → reach); you move on a signal, not a date. The
+trust core is the through-line — all the way to **Sprint**, an internal MCP server that lets everyone
+ask company memory in plain language from any AI tool (the capstone vision).
 
 **13:30 — Stakeholders + metrics (3 min).** 75 people, half sales/BD (the under-served half).
 Requirements by survey + scoring, re-run at each gate. Metrics instrumented from day one (eval,

@@ -7,7 +7,7 @@ contribute without one person in the loop. That's the whole point of the project
 > each tool's config file is a thin pointer to **[`AGENTS.md`](AGENTS.md)**, the single source of truth.
 
 ## Orient (5 min)
-1. **`README.md`** — what this is + the three-version layout (`v0-crawl` / `v1-walk` / `v2-run`).
+1. **`README.md`** — what this is + the four-version layout (`v0-crawl` / `v1-walk` / `v2-run` / `v3-sprint`).
 2. **`docs/index.html`** (or https://oplabs.daciasec.net) — the approach + crawl-walk-run plan.
 3. **`CADENCE.md`** — how every change ships: contract → failing test → observability → green → evidence.
 

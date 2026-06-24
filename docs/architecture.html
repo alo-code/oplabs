@@ -176,7 +176,7 @@
   <div class="grid">
     <div class="card"><b>Workflows are composed, not coded</b> — an agent is connectors + memory + a prompt + an eval. In <a href="crawl-walk-run.html">Run</a>, a non-engineer composes those behind guardrails without touching code.</div>
     <div class="card"><b>The model is behind an interface</b> — Claude by default, Gemini/OpenAI swappable per the JD, with a per-call budget guard. No vendor lock-in baked into agents.</div>
-    <div class="card"><b>Connectors are MCP-shaped</b> — typed tool + schema, so we can reuse existing MCP servers or expose ours to other agents. A Python connector can satisfy the same contract later.</div>
+    <div class="card"><b>Connectors are MCP-shaped</b> — typed tool + schema, so we can reuse existing MCP servers or expose ours to other agents. A Python connector can satisfy the same contract later. Exposing <em>Beacon itself</em> as an MCP server is <a href="versions.html">v3-sprint</a>.</div>
     <div class="card"><b>Config-driven</b> — repos, schedules, budgets, thresholds live in config/env, not in code, so behavior is edited without a deploy.</div>
   </div>
 
@@ -190,12 +190,12 @@
 
   <h2>What exists at each stage</h2>
   <table>
-    <tr><th>Seam</th><th>Crawl (now)</th><th>Walk</th><th>Run</th></tr>
-    <tr><td>Connectors</td><td>GitHub (real)</td><td>Library: Slack, HubSpot, Notion, Drive, Calendar, onchain</td><td>Self-serve catalog</td></tr>
-    <tr><td>Memory</td><td>Local file store</td><td>Postgres + pgvector (same interface)</td><td>Governed, multi-tenant</td></tr>
-    <tr><td>Orchestrator</td><td>Scheduler + run-now</td><td>Service: queues, retries, isolation</td><td>SLOs, on-call, degradation</td></tr>
-    <tr><td>Control plane</td><td>CLI + static HTML render</td><td>Web UI: trigger, history, output</td><td>Self-serve workflow builder</td></tr>
-    <tr><td>Governance</td><td>Read-only tokens, no secrets in logs</td><td>Central OAuth/secrets, audit log</td><td>Budgets, access control, PII/residency policy</td></tr>
+    <tr><th>Seam</th><th>Crawl (now)</th><th>Walk</th><th>Run</th><th>Sprint</th></tr>
+    <tr><td>Connectors</td><td>GitHub (real)</td><td>Library: Slack, HubSpot, Notion, Drive, Calendar, onchain</td><td>Self-serve catalog</td><td>Reached via MCP tools</td></tr>
+    <tr><td>Memory</td><td>Local file store</td><td>Postgres + pgvector (same interface)</td><td>Governed, multi-tenant</td><td>Queried live, in natural language</td></tr>
+    <tr><td>Orchestrator</td><td>Scheduler + run-now</td><td>Service: queues, retries, isolation</td><td>SLOs, on-call, degradation</td><td>+ MCP server (ambient access)</td></tr>
+    <tr><td>Control plane</td><td>CLI + static HTML render</td><td>Web UI: trigger, history, output</td><td>Self-serve workflow builder</td><td>Any AI tool — ask inline</td></tr>
+    <tr><td>Governance</td><td>Read-only tokens, no secrets in logs</td><td>Central OAuth/secrets, audit log</td><td>Budgets, access control, PII/residency policy</td><td>Per-user identity + audit on every call</td></tr>
   </table>
   <p class="note red"><span class="k">Language seam</span>This prototype is TypeScript on
   purpose (see the <a href="index.html#language">note on the Overview</a>). The seams above

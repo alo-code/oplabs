@@ -18,10 +18,10 @@ be handed to a non-engineer.
 Beacon is the always-on platform that fixes that. The full argument lives in `docs/` (open
 `docs/index.html`) — that's also the **approach document** for the case study.
 
-This repo is **three segregated versions**, one per crawl-walk-run stage: `v0-crawl/` (the only
-one that runs — the exec brief as an **n8n.cloud workflow** + a tested TS **trust core**), and
-`v1-walk/` + `v2-run/` (design-only, code-ready). Shared methodology (`skills/`, `todo/`,
-`CADENCE.md`, `notes.md`) and the approach doc (`docs/`) live at the root.
+This repo is **four segregated versions**, one per crawl-walk-run-sprint stage: `v0-crawl/` (the
+only one that runs — the exec brief as an **n8n.cloud workflow** + a tested TS **trust core**),
+and `v1-walk/` + `v2-run/` + `v3-sprint/` (design-only, code-ready). Shared methodology
+(`skills/`, `todo/`, `CADENCE.md`, `notes.md`) and the approach doc (`docs/`) live at the root.
 
 ## How work ships: the cadence
 
@@ -39,7 +39,7 @@ the change is needed.
 ## Repo map
 
 ```
-README.md             the front door — the three-version layout
+README.md             the front door — the four-version layout
 CADENCE.md            the contract for how work ships (read it)
 CONTRIBUTING.md       human "start here"; DEMO-SCRIPT.md, ROI.md, adr/ alongside
 skills/               AI-driven-development playbooks (shared across versions)
@@ -52,7 +52,8 @@ v0-crawl/             THE runnable version — n8n workflow + a tested TS trust 
   src/{demo,onchain}.ts  npm run demo (the gate) · npm run onchain (a real OP Mainnet read)
   test/ · evidence/   vitest specs · proof on real data
 v1-walk/              design-only: the platform — connectors, memory, control plane
-v2-run/               design-only: the vision — self-serve, governance, polyglot, onchain
+v2-run/               design-only: org-wide & governed — self-serve, governance, polyglot, onchain
+v3-sprint/            design-only: the vision — internal MCP for ambient, governed company-memory access
 ```
 
 ## Conventions

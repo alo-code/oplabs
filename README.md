@@ -20,23 +20,24 @@ and auth, is observable, and is usable by a non-engineer.**
 
 Open **`docs/index.html`** (or the hosted version at **https://oplabs.daciasec.net**).
 It's the approach doc for the case study — problem, proposed solution and why,
-stakeholders, and the crawl-walk-run plan — with diagrams, all cross-linked.
+stakeholders, and the crawl-walk-run-sprint plan — with diagrams, all cross-linked.
 
 **For reviewers & contributors:** [`CONTRIBUTING.md`](CONTRIBUTING.md) · [`DEMO-SCRIPT.md`](DEMO-SCRIPT.md) · [`ROI.md`](ROI.md) · [`adr/`](adr/) · `cd v0-crawl && npm run demo` (the trust gate) · `npm run onchain` (a real OP Mainnet read).
 
-## Three versions, segregated to show the thinking
+## Four versions, segregated to show the thinking
 
-The crawl → walk → run plan isn't just described — it's **three directories** (`v0` →
-`v1` → `v2`), so you can see the line of thinking as the system matures:
+The crawl → walk → run → sprint plan isn't just described — it's **four directories** (`v0` →
+`v1` → `v2` → `v3`), so you can see the line of thinking as the system matures:
 
 | Dir | Stage | State | What's in it |
 |---|---|---|---|
 | **`v0-crawl/`** | MVP — one workflow, trusted | **Runs today** | The weekly exec brief: an **n8n.cloud workflow** + a **tested TS trust core** (real GitHub + Claude calls, not mocked) |
 | **`v1-walk/`** | The platform | Design-only (code later) | Connector library, shared memory, control plane — where we outgrow no-code |
-| **`v2-run/`** | The vision | Design-only (code later) | Self-serve, governance, reliability, polyglot, onchain seam |
+| **`v2-run/`** | Org-wide, governed | Design-only (code later) | Self-serve, governance, reliability, polyglot, onchain seam |
+| **`v3-sprint/`** | The vision | Design-only (code later) | Internal **MCP server** — ambient, grounded, governed access to company memory from any AI tool |
 
-Each version is its own self-contained project; `v1-walk/` and `v2-run/` are scaffolded
-**code-ready** for when they're built.
+Each version is its own self-contained project; `v1-walk/`, `v2-run/`, and `v3-sprint/` are
+scaffolded **code-ready** for when they're built.
 
 ## Run the working slice (`v0-crawl/`)
 
@@ -57,7 +58,8 @@ credentials, and Run-now. Details in **`v0-crawl/README.md`**.
 docs/        approach doc — navigable HTML + diagrams → GitHub Pages (oplabs.daciasec.net)
 v0-crawl/    the runnable version (n8n workflow + tested TS trust core)
 v1-walk/     design-only — the platform (connectors, memory, control plane), code-ready
-v2-run/      design-only — the vision (self-serve, governance, polyglot, onchain), code-ready
+v2-run/      design-only — org-wide & governed (self-serve, governance, polyglot, onchain), code-ready
+v3-sprint/   design-only — the vision (internal MCP for ambient, governed company-memory access), code-ready
 skills/      AI-driven-development playbooks (shared across versions)
 todo/        workplans — planned/ongoing work (committed; the plan is part of the deliverable)
 notes.md     raw running log of how this was built with AI (a deliverable; not cleaned up)

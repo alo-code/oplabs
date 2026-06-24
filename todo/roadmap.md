@@ -1,4 +1,4 @@
-# Roadmap — crawl · walk · run
+# Roadmap — crawl · walk · run · sprint
 
 **Drafted**: 2026-06-23
 **Status**: drafted
@@ -93,7 +93,41 @@ safely.
 
 ---
 
-## Metrics that travel across all three stages
+## Sprint — ambient access (the vision)
+
+**Goal**: the platform's knowledge becomes *ambient* — every employee asks all
+of company memory in plain language from the tool they already work in (Claude
+Code, Cursor, Claude.ai, Slack), via one internal **MCP server**. It's a *thin
+adapter* over the v1/v2 platform: identity in, v2 governance decides, grounding
+holds — it enforces nothing new. Read opens broadly; write/actions stay
+policy-gated (the same gate that becomes onchain spend — the Option 2 bridge).
+
+**Scope (vision)**: `v3-sprint/docs/mcp-server.md`. An MCP server exposing the
+governed read API as tools (`ask`, `search_memory`, `get_brief`,
+`list_workflows`, `run_workflow`); per-user identity + audit on every call; the
+trust core's grounding gate applied to ad-hoc questions ("no grounded answer →
+I don't know"). The critical rule: **governance is the enforcement point, the
+MCP is not** — else people query around policy.
+
+### Signals it's time to move to Sprint
+- Non-engineers self-serve daily and the common ask shifts to "can I just *ask*
+  it?" rather than "run me a workflow".
+- People copy workflow output into their own AI tools to ask follow-ups — they
+  want it inline, where they work.
+- Governance is solid (access control + per-user audit live), so opening a read
+  API org-wide is safe.
+
+### Signals we're succeeding at Sprint
+- Daily active *queriers* far exceed the number of workflows; the median
+  question is answered in-tool in seconds.
+- New hires onboard by asking Beacon instead of pinging people; "where do I
+  find X" threads measurably drop.
+- The live question becomes what to let agents *do*, not just answer — the
+  bridge to governed onchain action (Option 2).
+
+---
+
+## Metrics that travel across all four stages
 Time saved (hrs/week), cost per run + total spend, latency, eval/quality
 score, adoption (active workflows · active non-engineer users), and risk
 reduction (silent-failure count → 0, % outputs grounded/audited). These are

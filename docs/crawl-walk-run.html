@@ -21,7 +21,7 @@
 
 <main>
   <span class="tag">MVP → End State</span>
-  <h1>Roadmap — crawl · walk · run</h1>
+  <h1>Roadmap — crawl · walk · run · sprint</h1>
   <p class="sub">The first version that earns trust, what comes next, the long-term
   vision, and the <b>signals</b> that say it's time to move between stages.</p>
 
@@ -30,7 +30,7 @@
   until one workflow has proven it's worth platforming.</p>
 
   <figure>
-    <svg class="dgm" viewBox="0 0 880 250" role="img" aria-label="Crawl, walk, run as ascending stages gated by signals">
+    <svg class="dgm" viewBox="0 0 880 284" role="img" aria-label="Crawl, walk, run, sprint as ascending stages gated by signals">
       <defs>
         <marker id="r" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
           <path class="d-arrow" d="M0,0 L9,4.5 L0,9 Z"/>
@@ -38,35 +38,46 @@
       </defs>
 
       <!-- Crawl -->
-      <rect class="d-box" x="20" y="150" width="248" height="80" rx="11" style="stroke:var(--ink);stroke-width:1.6"/>
-      <text x="44" y="178" font-size="13" font-weight="800" fill="var(--ink)">CRAWL</text>
-      <text class="d-title" x="44" y="199" font-size="12.5">One workflow, trusted</text>
-      <text class="d-label" x="44" y="217" font-size="11">exec brief · always-on · grounded</text>
+      <rect class="d-box" x="16" y="196" width="180" height="54" rx="11" style="stroke:var(--ink);stroke-width:1.6"/>
+      <text x="29" y="214" font-size="12" font-weight="800" fill="var(--ink)">CRAWL</text>
+      <text class="d-title" x="29" y="230" font-size="11">One workflow, trusted</text>
+      <text class="d-label" x="29" y="244" font-size="9.5">exec brief · grounded</text>
 
       <!-- Walk -->
-      <rect class="d-box" x="316" y="100" width="248" height="80" rx="11" style="stroke:var(--gray-2);stroke-width:1.6"/>
-      <text x="340" y="128" font-size="13" font-weight="800" fill="var(--gray-2)">WALK</text>
-      <text class="d-title" x="340" y="149" font-size="12.5">A platform, not a script</text>
-      <text class="d-label" x="340" y="167" font-size="11">connectors · memory · control plane</text>
+      <rect class="d-box" x="238" y="139" width="180" height="54" rx="11" style="stroke:var(--gray-2);stroke-width:1.6"/>
+      <text x="251" y="157" font-size="12" font-weight="800" fill="var(--gray-2)">WALK</text>
+      <text class="d-title" x="251" y="173" font-size="11">A platform, not a script</text>
+      <text class="d-label" x="251" y="187" font-size="9.5">connectors · memory</text>
 
       <!-- Run -->
-      <rect class="d-box" x="612" y="50" width="248" height="80" rx="11" style="stroke:var(--gray-3);stroke-width:1.6"/>
-      <text x="636" y="78" font-size="13" font-weight="800" fill="var(--gray-3)">RUN</text>
-      <text class="d-title" x="636" y="99" font-size="12.5">Org-wide, self-serve, governed</text>
-      <text class="d-label" x="636" y="117" font-size="11">many workflows · many teams</text>
+      <rect class="d-box" x="460" y="82" width="180" height="54" rx="11" style="stroke:var(--gray-3);stroke-width:1.6"/>
+      <text x="473" y="100" font-size="12" font-weight="800" fill="var(--gray-3)">RUN</text>
+      <text class="d-title" x="473" y="116" font-size="11">Org-wide, governed</text>
+      <text class="d-label" x="473" y="130" font-size="9.5">self-serve · many teams</text>
+
+      <!-- Sprint -->
+      <rect class="d-box" x="682" y="25" width="180" height="54" rx="11" style="stroke:var(--gray-4);stroke-width:1.6"/>
+      <text x="695" y="43" font-size="12" font-weight="800" fill="var(--gray-4)">SPRINT</text>
+      <text class="d-title" x="695" y="59" font-size="11">Ambient — ask anything</text>
+      <text class="d-label" x="695" y="73" font-size="9.5">every employee · any tool</text>
 
       <!-- gates -->
-      <line class="d-flow" x1="268" y1="170" x2="316" y2="140" marker-end="url(#r)"/>
-      <line class="d-flow" x1="564" y1="120" x2="612" y2="90" marker-end="url(#r)"/>
-      <text class="d-label" x="292" y="150" text-anchor="middle" font-size="10">signal ↑</text>
-      <text class="d-label" x="588" y="100" text-anchor="middle" font-size="10">signal ↑</text>
+      <line class="d-flow" x1="196" y1="210" x2="238" y2="176" marker-end="url(#r)"/>
+      <line class="d-flow" x1="418" y1="153" x2="460" y2="119" marker-end="url(#r)"/>
+      <line class="d-flow" x1="640" y1="96" x2="682" y2="62" marker-end="url(#r)"/>
+      <text class="d-label" x="214" y="187" text-anchor="middle" font-size="10">signal ↑</text>
+      <text class="d-label" x="436" y="130" text-anchor="middle" font-size="10">signal ↑</text>
+      <text class="d-label" x="658" y="73" text-anchor="middle" font-size="10">signal ↑</text>
 
-      <!-- signal captions under each gate -->
-      <text class="d-label" x="292" y="243" text-anchor="middle" font-size="10.5">2nd team pulls demand</text>
-      <text class="d-label" x="588" y="243" text-anchor="middle" font-size="10.5">non-engineers self-serve</text>
+      <!-- signal captions along the bottom -->
+      <text class="d-label" x="214" y="272" text-anchor="middle" font-size="10.5">2nd team pulls demand</text>
+      <text class="d-label" x="436" y="272" text-anchor="middle" font-size="10.5">non-engineers self-serve</text>
+      <text class="d-label" x="658" y="272" text-anchor="middle" font-size="10.5">people ask it inline</text>
     </svg>
-    <figcaption>Three stages, each gated by a real-world signal — not a calendar. The arrows are
-    the trust earned at the prior stage paying for the next.</figcaption>
+    <figcaption>Four stages, each gated by a real-world signal — not a calendar. The arrows are
+    the trust earned at the prior stage paying for the next; the grayscale ramp lightens as the
+    horizon moves out. Sprint is the capstone — the platform's knowledge, askable by everyone,
+    everywhere.</figcaption>
   </figure>
 
   <!-- CRAWL -->
@@ -121,15 +132,33 @@
       <li><b>Polyglot where it pays</b>: Python agents for eval/ML-heavy work, a Go hot path for high-throughput connectors — behind the same seams, no rewrite.</li>
       <li><b>Onchain seam</b> (bridge toward Option 2): agents that act with value do so through policy-bounded, auditable spend — the same trust machinery, extended to money.</li>
     </ul>
-    <div class="signal"><b>Succeeding at Run when:</b>
+    <div class="signal"><b>Move to Sprint when:</b>
       <ul>
-        <li>a new workflow takes hours</li>
-        <li>measurable org impact — hours saved/week, cost/workflow trending down</li>
-        <li>AI work is <em>boringly reliable</em>; the question is what to automate next</li>
+        <li>non-engineers self-serve daily and the common ask shifts to "can I just <em>ask</em> it?" — not "run me a workflow"</li>
+        <li>people copy workflow output into their own AI tools to ask follow-ups — they want it <em>inline</em>, where they work</li>
+        <li>governance is solid (access control + per-user audit live), so opening a read API org-wide is safe</li>
       </ul></div>
   </div>
 
-  <h2>Metrics that travel across all three stages</h2>
+  <!-- SPRINT -->
+  <div class="stage stage-sprint" style="margin-top:14px">
+    <span class="badge">SPRINT</span>
+    <h3>Ambient — ask the company anything, anywhere</h3>
+    <p><b>Goal:</b> the platform's knowledge becomes <em>ambient</em> — every employee asks all
+    of company memory in plain language from the tool they already work in (Claude Code, Cursor,
+    Claude.ai, Slack), via one internal <b>MCP server</b>. It's a <b>thin adapter</b> over the
+    v1/v2 platform: identity goes in, v2 governance decides, grounding still holds — it enforces
+    nothing new. <b>Read opens broadly; write/actions stay policy-gated</b> (the same gate that
+    becomes onchain spend — the bridge to Option 2).</p>
+    <div class="signal"><b>Succeeding at Sprint when:</b>
+      <ul>
+        <li>daily active <em>queriers</em> far exceed the number of workflows — the median question is answered in-tool in seconds</li>
+        <li>new hires onboard by asking Beacon instead of pinging people; "where do I find…" threads measurably drop</li>
+        <li>AI work is <em>boringly reliable</em> and the live question becomes what to let agents <em>do</em>, not just answer (→ governed onchain action)</li>
+      </ul></div>
+  </div>
+
+  <h2>Metrics that travel across all four stages</h2>
   <p>Instrumented from crawl, so the ROI story is real by the time anyone asks — these are the
   JD's success metrics:</p>
   <div class="grid">

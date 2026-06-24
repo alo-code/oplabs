@@ -243,3 +243,31 @@ npm test
   duplicated content to drift; each tool auto-loads its pointer → same guidance everywhere.
 - Corrected stale conventions while porting (secrets live in n8n credentials, not a
   src/core/config.ts that never existed after the n8n pivot).
+
+## 2026-06-24 — added v3-sprint (internal MCP) as the new capstone
+
+- Q (from the user): could there eventually be a v3 that's an internal MCP for the team — so
+  every employee can query all company info naturally? Talked it through first, didn't just build.
+  Landed on: yes, and it's a *separate* v3, not folded into v2. Reasoning: each stage proves one
+  thing; v2 proves governed self-serve; bolting "ambient access for everyone" onto v2 muddies that
+  signal. And the MCP is only safe to open broadly *after* v2's access-control + audit exist — so
+  it genuinely depends on v2. The metaphor extends cleanly: crawl → walk → run → **sprint**.
+- The framing that stuck: the bottleneck *moves* — laptop/trust → eng-capacity → governance →
+  **reach (the interface itself)**. After v2 you still have to *go somewhere* (a workflow, the
+  control plane) to get an answer; v3 makes the knowledge come to you, inline in Claude Code /
+  Cursor / Claude.ai / Slack.
+- Guardrail I wrote down so it can't drift: the MCP is a **thin pass-through** — identity in, v2
+  governance decides, grounding holds. Governance is the enforcement point, the MCP is NOT — else
+  people query around policy. Read opens broadly; write/actions stay policy-gated → that's literally
+  the onchain spend-gate (the Option 2 bridge), same trust spine.
+- Scaffolded `v3-sprint/` like v1/v2 (design-only): README + docs/README + docs/mcp-server.md (the
+  real design doc — tools contract, thin-adapter flow, same-vs-new table, read-first, crawl-walk-run
+  on the seam itself) + reserved src/. Added v3 across the docs site: versions.html (summary table,
+  the 4-up "how to read" cards, a per-axis comparison column, a new per-version section + an
+  MCP-over-platform SVG), crawl-walk-run.html (redrew the ascending-stages diagram for 4 boxes,
+  re-gated Run → Sprint, added the Sprint stage + signals), architecture.html (Sprint column + a
+  forward-link on the "MCP-shaped" card), index.html (the plan-in-one-line). Kept the rest in sync
+  (README, AGENTS, todo/roadmap, CHANGELOG) — the repo's whole point is no drift.
+- Relabeled v2 "the vision" → "org-wide & governed" so there's a single end-state vision (v3).
+- CSS: added `--gray-4` (ramp continues — furthest out = lightest), `.stage-sprint`, `.grid-4`.
+- Honest note: v3 is **design-only** — no MCP code yet. It's the direction, gated on v2 existing.

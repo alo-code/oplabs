@@ -21,51 +21,55 @@
 
 <main>
   <span class="tag">Build plan</span>
-  <h1>The three versions — design, stack &amp; architecture</h1>
-  <p class="sub lede">The crawl → walk → run plan is three directories
-  (<code>v0-crawl</code> → <code>v1-walk</code> → <code>v2-run</code>), so the line of
-  thinking is browsable. <b>v0 runs today</b>; v1 and v2 are design-led, scaffolded
+  <h1>The four versions — design, stack &amp; architecture</h1>
+  <p class="sub lede">The crawl → walk → run → sprint plan is four directories
+  (<code>v0-crawl</code> → <code>v1-walk</code> → <code>v2-run</code> → <code>v3-sprint</code>),
+  so the line of thinking is browsable. <b>v0 runs today</b>; v1–v3 are design-led, scaffolded
   code-ready. In the diagrams, <b>solid = built</b>, <b>dashed = design-only</b>.</p>
 
   <table>
     <tr><th>Version</th><th>Stage</th><th>State</th><th>Stack in one line</th></tr>
     <tr><td><code>v0-crawl</code></td><td>MVP — one workflow, trusted</td><td><b>Runs today</b></td><td>n8n.cloud + a tested TypeScript trust core</td></tr>
     <tr><td><code>v1-walk</code></td><td>The platform</td><td>Design-only</td><td>TS services · Postgres+pgvector · connector library · control-plane UI</td></tr>
-    <tr><td><code>v2-run</code></td><td>The vision</td><td>Design-only</td><td>Self-serve + governance + multi-provider + onchain seam</td></tr>
+    <tr><td><code>v2-run</code></td><td>Org-wide, governed</td><td>Design-only</td><td>Self-serve + governance + multi-provider + onchain seam</td></tr>
+    <tr><td><code>v3-sprint</code></td><td>The vision</td><td>Design-only</td><td>Internal MCP server — ambient, grounded, governed access from any AI tool</td></tr>
   </table>
 
-  <h2>How to read the three versions — what actually changes</h2>
+  <h2>How to read the four versions — what actually changes</h2>
   <p>They aren't "small / medium / large." Each <b>answers a different question</b> and
   <b>removes a different bottleneck</b> — and you only earn the next one with a real-world
   <em>signal</em>, not a date.</p>
-  <div class="grid-3">
+  <div class="grid-4">
     <div class="card"><b>V0 · crawl</b><br>“Can we trust <em>one</em> workflow enough to act on it?”<br><span style="color:var(--muted)">Bottleneck removed: the laptop + blind trust.</span></div>
     <div class="card"><b>V1 · walk</b><br>“Can we make the <em>next</em> workflow cheap?”<br><span style="color:var(--muted)">Bottleneck removed: engineering capacity.</span></div>
     <div class="card"><b>V2 · run</b><br>“Can the <em>org</em> run AI work safely without engineers in the loop?”<br><span style="color:var(--muted)">Bottleneck removed: governance.</span></div>
+    <div class="card"><b>V3 · sprint</b><br>“Can <em>everyone</em> ask all company knowledge, inline, from any tool?”<br><span style="color:var(--muted)">Bottleneck removed: reach — the interface itself.</span></div>
   </div>
-  <p>The bottleneck <em>moves</em> — laptop/trust → engineering-capacity → governance. That arc is the plan.</p>
+  <p>The bottleneck <em>moves</em> — laptop/trust → engineering-capacity → governance → reach (the interface itself). That arc is the plan.</p>
 
   <table>
-    <tr><th></th><th>V0 — crawl</th><th>V1 — walk</th><th>V2 — run</th></tr>
-    <tr><td>Job</td><td>Trust on one workflow</td><td>Leverage across workflows</td><td>Safe scale across the org</td></tr>
-    <tr><td>Scope</td><td>1 workflow (the brief)</td><td>2–3 workflows</td><td>many workflows, many teams</td></tr>
-    <tr><td>Who consumes</td><td>eng leadership + BD</td><td>a few teams</td><td>all ~75, incl. non-engineers</td></tr>
-    <tr><td>Who builds</td><td>1 engineer wires n8n</td><td>engineers build shared services</td><td>non-engineers self-serve; eng owns guardrails</td></tr>
-    <tr><td>Orchestration</td><td>n8n.cloud (no-code)</td><td>n8n + a TS service layer</td><td>+ policy engine, multi-provider routing</td></tr>
-    <tr><td>Memory</td><td>none (stateless per run)</td><td>Postgres + pgvector (shared)</td><td>governed, multi-tenant</td></tr>
-    <tr><td>Auth</td><td>per-workflow n8n creds</td><td>central OAuth / secret store</td><td>access-controlled + audited</td></tr>
-    <tr><td>State today</td><td><b>runs</b></td><td>design-only</td><td>design-only</td></tr>
+    <tr><th></th><th>V0 — crawl</th><th>V1 — walk</th><th>V2 — run</th><th>V3 — sprint</th></tr>
+    <tr><td>Job</td><td>Trust on one workflow</td><td>Leverage across workflows</td><td>Safe scale across the org</td><td>Ambient access for everyone</td></tr>
+    <tr><td>Scope</td><td>1 workflow (the brief)</td><td>2–3 workflows</td><td>many workflows, many teams</td><td>all workflows + memory, askable</td></tr>
+    <tr><td>Who consumes</td><td>eng leadership + BD</td><td>a few teams</td><td>all ~75, incl. non-engineers</td><td>every employee, in any AI tool</td></tr>
+    <tr><td>Who builds</td><td>1 engineer wires n8n</td><td>engineers build shared services</td><td>non-engineers self-serve; eng owns guardrails</td><td>eng owns the MCP server; everyone queries</td></tr>
+    <tr><td>Orchestration</td><td>n8n.cloud (no-code)</td><td>n8n + a TS service layer</td><td>+ policy engine, multi-provider routing</td><td>+ MCP server over the platform</td></tr>
+    <tr><td>Memory</td><td>none (stateless per run)</td><td>Postgres + pgvector (shared)</td><td>governed, multi-tenant</td><td>same store, queried live in NL</td></tr>
+    <tr><td>Auth</td><td>per-workflow n8n creds</td><td>central OAuth / secret store</td><td>access-controlled + audited</td><td>per-user identity + audit on every call</td></tr>
+    <tr><td>State today</td><td><b>runs</b></td><td>design-only</td><td>design-only</td><td>design-only</td></tr>
   </table>
 
   <h3>The through-line: trust is the constant</h3>
-  <p>The <b>trust core</b> (grounding + the eval gate) is the spine that survives all three stages —
+  <p>The <b>trust core</b> (grounding + the eval gate) is the spine that survives all four stages —
   it just graduates form: a <b>Code node</b> in V0 → a <b>shared service</b> in V1 → a
-  <b>governed, audited</b> service (extended to onchain <em>spend</em> policy) in V2. Get the trust
-  machinery right once, on one workflow, then carry it everywhere.</p>
+  <b>governed, audited</b> service in V2 → the <b>boundary of an ambient query</b> in V3 (and,
+  extended to onchain <em>spend</em> policy, the bridge to Option 2). Get the trust machinery right
+  once, on one workflow, then carry it everywhere.</p>
 
   <div class="note"><span class="k">The value in one line</span>Adding the 2nd workflow (say prospect
   intel): <b>impossible in V0</b> (one hardcoded workflow) → <b>days in V1</b> (reuse connectors +
-  memory + trust) → <b>hours in V2</b>, by a non-engineer. Weeks → days → hours.</div>
+  memory + trust) → <b>hours in V2</b>, by a non-engineer. Weeks → days → hours — and in V3, for an
+  answer you don't build a workflow at all; you just <em>ask</em>.</div>
 
   <p class="note red"><span class="k">Honest nuance</span>Crawl doesn't fix all six pains — and that's
   deliberate. V0 fixes laptop-sleep, observability, non-engineer-readability, and grounding/trust (via
@@ -229,7 +233,7 @@
   </ul>
 
   <!-- ============================ v2-run ============================ -->
-  <h2>v2-run — the vision (design-only)</h2>
+  <h2>v2-run — org-wide &amp; governed (design-only)</h2>
   <h3>Design</h3>
   <p>Beacon as <em>how OP Labs runs AI work</em> — many workflows, many teams, safely. The
   platform stops being engineer-gated: non-engineers compose workflows behind guardrails, and
@@ -285,12 +289,75 @@
     <li>Design docs + diagrams in <code>v2-run/</code>: the governance/policy model and the onchain spend-policy design (smart accounts + session keys on the OP Stack).</li>
   </ul>
 
+  <!-- ============================ v3-sprint ============================ -->
+  <h2>v3-sprint — the vision (design-only)</h2>
+  <h3>Design</h3>
+  <p>The capstone. After Run, getting an answer still means <em>going somewhere</em> — open the
+  control plane, run a workflow, read the output. Sprint makes the knowledge <b>ambient</b>: every
+  employee asks all of company memory in plain language from the tool they already work in
+  (Claude Code, Cursor, Claude.ai, Slack), through one internal <b>MCP server</b>. It's a
+  <b>thin adapter</b> over the v1/v2 platform — identity in, v2 governance decides, grounding holds.
+  The bottleneck it removes isn't trust, engineering, or governance; it's <b>the interface itself</b>.</p>
+
+  <h3>Tech stack (vision)</h3>
+  <table>
+    <tr><th>Layer</th><th>Choice</th></tr>
+    <tr><td>Interface</td><td><b>MCP server</b> (MCP TS SDK) — Beacon's tools in any MCP client; reuse the open standard, don't outsource the trust layer</td></tr>
+    <tr><td>Tools</td><td><code>ask</code> · <code>search_memory</code> · <code>get_brief</code> · <code>list_workflows</code> · <code>run_workflow</code> — read-first; write stays policy-gated</td></tr>
+    <tr><td>Identity</td><td>caller identity (OAuth) on every call → v2 access control + a per-user audit log</td></tr>
+    <tr><td>Grounding</td><td>the same trust core — an ungrounded ad-hoc answer is refused (<em>“I don't have a grounded answer”</em>), not guessed</td></tr>
+    <tr><td>Reuse</td><td>nothing new underneath — connectors + memory (v1), governance (v2); the MCP is a pass-through</td></tr>
+  </table>
+
+  <h3>Architecture</h3>
+  <figure>
+    <svg class="dgm" viewBox="0 0 880 318" role="img" aria-label="v3-sprint: an MCP server as a thin layer over the v1/v2 platform (design-only)">
+      <defs><marker id="v3a" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path class="d-arrow" d="M0,0 L9,4.5 L0,9 Z"/></marker></defs>
+
+      <text class="d-eyebrow" x="440" y="22" text-anchor="middle" font-size="11">ANY AI TOOL THE TEAM ALREADY USES</text>
+      <g font-size="12">
+        <rect class="d-box ghost" x="16" y="32" width="200" height="42" rx="9"/><text class="d-title" x="116" y="58" text-anchor="middle">Claude Code</text>
+        <rect class="d-box ghost" x="238" y="32" width="200" height="42" rx="9"/><text class="d-title" x="338" y="58" text-anchor="middle">Cursor</text>
+        <rect class="d-box ghost" x="460" y="32" width="200" height="42" rx="9"/><text class="d-title" x="560" y="58" text-anchor="middle">Claude.ai</text>
+        <rect class="d-box ghost" x="682" y="32" width="182" height="42" rx="9"/><text class="d-title" x="773" y="58" text-anchor="middle">Slack</text>
+      </g>
+
+      <line class="d-flow thin" x1="116" y1="74" x2="384" y2="104" marker-end="url(#v3a)"/>
+      <line class="d-flow thin" x1="338" y1="74" x2="424" y2="104" marker-end="url(#v3a)"/>
+      <line class="d-flow thin" x1="560" y1="74" x2="468" y2="104" marker-end="url(#v3a)"/>
+      <line class="d-flow thin" x1="773" y1="74" x2="508" y2="104" marker-end="url(#v3a)"/>
+
+      <rect class="d-box accent" x="120" y="106" width="640" height="56" rx="10"/>
+      <text class="d-title" x="440" y="129" text-anchor="middle" font-size="13">Beacon MCP server — ask · search · get_brief · list · run</text>
+      <text class="d-label" x="440" y="148" text-anchor="middle" font-size="10.5">identity in · grounding out · thin pass-through (enforces nothing new)</text>
+
+      <line class="d-flow thin" x1="440" y1="162" x2="440" y2="186" marker-end="url(#v3a)"/>
+      <rect class="d-box ghost" x="120" y="188" width="640" height="44" rx="10"/>
+      <text class="d-title" x="440" y="207" text-anchor="middle" font-size="12.5">v2 governance — access control · per-user audit · budgets</text>
+      <text class="d-label" x="440" y="223" text-anchor="middle" font-size="10.5">decides allow / deny, logs every call</text>
+
+      <line class="d-flow thin" x1="440" y1="232" x2="440" y2="256" marker-end="url(#v3a)"/>
+      <rect class="d-box ghost" x="120" y="258" width="640" height="44" rx="10"/>
+      <text class="d-title" x="440" y="277" text-anchor="middle" font-size="12.5">v1 platform — connectors · shared memory · trust core</text>
+      <text class="d-label" x="440" y="293" text-anchor="middle" font-size="10.5">does the fetching, memory-first; grounds the answer</text>
+    </svg>
+    <figcaption>Design-only (dashed = planned; black = the new piece). The MCP server is a thin
+    layer: it carries the caller's identity in and grounded results out, while v2 governance still
+    decides and v1 still fetches. Governance is the enforcement point — the MCP is not — so no one
+    can query around policy.</figcaption>
+  </figure>
+
+  <h3>What's next to build</h3>
+  <ul>
+    <li>Design docs + diagrams in <code>v3-sprint/</code>: the MCP tool contract, the identity/audit pass-through, and the read-first / write-gated boundary (<code>v3-sprint/docs/mcp-server.md</code>).</li>
+  </ul>
+
   <!-- ============================ overall ============================ -->
   <h2>What's next, overall</h2>
   <div class="note red"><span class="k">Immediate</span>Finish <code>v0-crawl</code> end-to-end:
   author the n8n workflow, mirror the trust core into its Code node, then do a <b>real run</b>
-  on real GitHub activity and capture the evidence. That's the slice that "has to run." v1 and
-  v2 then deepen as committed design docs in their dirs.</div>
+  on real GitHub activity and capture the evidence. That's the slice that "has to run." v1, v2,
+  and v3 then deepen as committed design docs in their dirs.</div>
   <p>The general system seams live on the <a href="architecture.html">Architecture</a> page; the
   stage signals + metrics on the <a href="crawl-walk-run.html">Roadmap</a>. This page is the
   concrete, per-version view of how it actually gets built.</p>
