@@ -208,3 +208,15 @@ npm test
   session keys, spend policy, auditable settlement). Grounding ↔ authorization; speculative ↔ over-policy.
 - Added an eval · grounded% · artifacts footer to render-eng.js so run metrics show in the digest.
 - Still pending (needs the user's n8n.cloud + creds): the REAL-data run + its evidence.
+
+## 2026-06-24 — contributor enablement + workplan reconciliation (todo items 2/3/4)
+
+- Reconciled stale workplans: `git mv` connectors-library.md + shared-memory-postgres.md from
+  todo/ → v1-walk/docs/ (they were always v1 design); marked exec-brief-slice.md SHIPPED (built as
+  n8n + trust core, not the original 9 TS slices); refreshed todo/README to the v0/v1/v2 reality.
+- Contributor entry points: CONTRIBUTING.md (human "start here") + skills/n8n-workflow.md (the gap —
+  how to change the workflow incl. as a non-engineer, and keep the trust gate in sync with src/trust)
+  + a PR template under .github/.
+- Fleshed v1-walk/docs/README + v2-run/docs/README (the four-pillar designs, concise) and wrote
+  DEMO-SCRIPT.md (the 20–30 min talk track: open on `npm run demo`, close on the onchain bridge).
+- Kept all of it tight (post-concision-pass discipline).

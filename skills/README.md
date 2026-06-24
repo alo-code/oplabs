@@ -17,6 +17,7 @@ procedure tied to this repo's cadence and architecture.
 | [`evals-and-observability.md`](./evals-and-observability.md) | Making agent output testable + runs observable |
 | [`working-with-notes.md`](./working-with-notes.md) | Every session — keeping `notes.md` honest |
 | [`docs-site.md`](./docs-site.md) | Building or editing the `docs/` approach site (pages + SVG diagrams) |
+| [`n8n-workflow.md`](./n8n-workflow.md) | Changing the v0 n8n workflow (or editing it as a non-engineer) |
 
 > If you find yourself doing something repeatedly that isn't written down,
 > that's a missing skill. Add it here in the same shape.

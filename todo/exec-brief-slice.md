@@ -6,7 +6,11 @@
 **Demo-critical path** (the ~3h "it has to run" subset): 1.1 → 1.2 → 1.4 →
 1.5 → 1.6 → 1.7. Slices 1.3, 1.8, 1.9 make it a *platform* slice; they can
 follow the live demo.
-**Status**: drafted
+**Status**: ✅ SHIPPED — but as an **n8n workflow + a tested TS trust core**
+([`../v0-crawl/`](../v0-crawl/)), not the 9 pure-TS slices below. Choosing n8n removed the
+scheduler / observability / non-engineer slices *for free*; the trust slices (grounding +
+evals) did ship — see `v0-crawl/src/trust/`. The slice plan below is kept for the record:
+how the thinking started, before the n8n pivot (which `notes.md` documents).
 
 ## Problem
 
