@@ -15,6 +15,7 @@ export interface EvalChecks {
   wordBand: boolean; // total words within band (catches empty / runaway output)
   words: number;
   noSpeculativeImpact: boolean; // no uncited %/× figure in any "why it matters" line
+  noLeakedSecrets: boolean; // no secret/PII pattern anywhere in the brief
 }
 
 export interface EvalResult {
@@ -55,21 +56,25 @@ export function scoreBrief(
     notes.push(`speculative impact (uncited figures in a "why it matters" line): ${speculative.join(", ")}`);
   }
 
+  const leaks = findLeaks(brief);
+  const noLeakedSecrets = leaks.length === 0;
+  if (!noLeakedSecrets) notes.push(`possible secret/PII leak: ${leaks.join(", ")}`);
+
   const score =
     WEIGHTS.grounded * g.groundedRatio +
     WEIGHTS.structure * (structure ? 1 : 0) +
     WEIGHTS.wordBand * (wordBand ? 1 : 0) +
     WEIGHTS.noSpeculativeImpact * (noSpeculativeImpact ? 1 : 0);
 
-  // Hard gate: never publish (least of all to BD) if ungrounded OR if a customer-
-  // relevance line invents an impact figure.
-  const pass = g.grounded && noSpeculativeImpact && score >= floor;
+  // Hard gate: never publish if ungrounded, if a customer-relevance line invents a figure,
+  // or if the text leaks a secret/PII.
+  const pass = g.grounded && noSpeculativeImpact && noLeakedSecrets && score >= floor;
 
   return {
     score: round(score),
     pass,
     floor,
-    checks: { structure, grounded: g.grounded, groundedRatio: round(g.groundedRatio), wordBand, words, noSpeculativeImpact },
+    checks: { structure, grounded: g.grounded, groundedRatio: round(g.groundedRatio), wordBand, words, noSpeculativeImpact, noLeakedSecrets },
     notes,
   };
 }
@@ -94,6 +99,24 @@ function findSpeculativeImpact(brief: Brief, activity: Activity): string[] {
     }
   }
   return flagged;
+}
+
+// Patterns that strongly indicate a leaked secret or PII — they must never reach Slack/BD.
+const LEAK_PATTERNS: Array<[string, RegExp]> = [
+  ["api key", /\bsk-[A-Za-z0-9_-]{16,}\b/],
+  ["github token", /\bgh[posru]_[A-Za-z0-9]{20,}\b/],
+  ["aws key", /\bAKIA[0-9A-Z]{16}\b/],
+  ["slack token", /\bxox[baprs]-[A-Za-z0-9-]{10,}\b/],
+  ["private key", /-----BEGIN [A-Z ]*PRIVATE KEY-----/],
+  ["email (PII)", /\b[\w.+-]+@[\w-]+\.[\w.-]{2,}\b/],
+];
+
+function findLeaks(brief: Brief): string[] {
+  const text = [
+    brief.title,
+    ...brief.sections.flatMap((s) => [s.heading, ...s.bullets.flatMap((b) => [b.text, b.whyItMatters ?? ""])]),
+  ].join(" ");
+  return LEAK_PATTERNS.filter(([, re]) => re.test(text)).map(([name]) => name);
 }
 
 function countWords(brief: Brief): number {

@@ -1,5 +1,7 @@
 # Beacon
 
+[![CI](https://github.com/alo-code/oplabs/actions/workflows/ci.yml/badge.svg)](https://github.com/alo-code/oplabs/actions/workflows/ci.yml)
+
 **An always-on agent platform for OP Labs' internal AI workflows.**
 OP Labs case study — **Option 1: "our AI workflows do not scale."**
 
@@ -19,6 +21,8 @@ and auth, is observable, and is usable by a non-engineer.**
 Open **`docs/index.html`** (or the hosted version at **https://oplabs.daciasec.net**).
 It's the approach doc for the case study — problem, proposed solution and why,
 stakeholders, and the crawl-walk-run plan — with diagrams, all cross-linked.
+
+**For reviewers & contributors:** [`CONTRIBUTING.md`](CONTRIBUTING.md) · [`DEMO-SCRIPT.md`](DEMO-SCRIPT.md) · [`ROI.md`](ROI.md) · [`adr/`](adr/) · `cd v0-crawl && npm run demo` (the trust gate) · `npm run onchain` (a real OP Mainnet read).
 
 ## Three versions, segregated to show the thinking
 

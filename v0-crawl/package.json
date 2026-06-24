@@ -9,9 +9,11 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "demo": "tsx src/demo.ts"
+    "demo": "tsx src/demo.ts",
+    "onchain": "tsx src/onchain.ts"
   },
   "dependencies": {
+    "viem": "^2.21.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

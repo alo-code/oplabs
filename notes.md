@@ -220,3 +220,15 @@ npm test
 - Fleshed v1-walk/docs/README + v2-run/docs/README (the four-pillar designs, concise) and wrote
   DEMO-SCRIPT.md (the 20–30 min talk track: open on `npm run demo`, close on the onchain bridge).
 - Kept all of it tight (post-concision-pass discipline).
+
+## 2026-06-24 — brownie points (onchain · CI · trust-gate safety · ROI/ADRs)
+
+- **Onchain (verified real):** src/onchain.ts + `npm run onchain` — a READ-ONLY viem call against
+  OP Mainnet (no keys, no transaction). Pulled real block 153361916 (16 txns). It's a 6th groundable
+  source (kind "onchain") AND the V2 spend-gate made concrete (ALLOW/BLOCK vs a budget + allowlist).
+- **Trust gate deepened:** added a secret/PII-leak HARD gate to evals.ts (+ mirrored to trust-node.js)
+  and a labeled eval-set regression test (good→publish, fake-PR→held, invented-metric→held,
+  leaked-secret→held; one case cites the onchain artifact). typecheck clean, 9/9 tests.
+- **CI:** .github/workflows/ci.yml runs typecheck + tests on push/PR; README badge added.
+- **ROI + ADRs:** ROI.md (~40× buy-in math) + adr/0001 (n8n-vs-custom) + adr/0002 (TS); README links them.
+- The real n8n run is still the only thing needing the user's n8n.cloud.

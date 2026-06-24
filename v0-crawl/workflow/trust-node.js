@@ -78,6 +78,27 @@ function findSpeculativeImpact(brief, activity) {
   return flagged;
 }
 
+const LEAK_PATTERNS = [
+  ["api key", /\bsk-[A-Za-z0-9_-]{16,}\b/],
+  ["github token", /\bgh[posru]_[A-Za-z0-9]{20,}\b/],
+  ["aws key", /\bAKIA[0-9A-Z]{16}\b/],
+  ["slack token", /\bxox[baprs]-[A-Za-z0-9-]{10,}\b/],
+  ["private key", /-----BEGIN [A-Z ]*PRIVATE KEY-----/],
+  ["email (PII)", /\b[\w.+-]+@[\w-]+\.[\w.-]{2,}\b/],
+];
+function findLeaks(brief) {
+  const t = [brief.title || ""];
+  for (const s of brief.sections || []) {
+    t.push(s.heading || "");
+    for (const b of s.bullets || []) {
+      t.push(b.text || "");
+      if (b.whyItMatters) t.push(b.whyItMatters);
+    }
+  }
+  const text = t.join(" ");
+  return LEAK_PATTERNS.filter((p) => p[1].test(text)).map((p) => p[0]);
+}
+
 function countWords(brief) {
   const t = [brief.title || ""];
   for (const s of brief.sections || []) {
@@ -107,6 +128,8 @@ function scoreBrief(brief, activity, opts) {
   const wordBand = words >= minW && words <= maxW;
   const spec = findSpeculativeImpact(brief, activity);
   const noSpeculativeImpact = spec.length === 0;
+  const leaks = findLeaks(brief);
+  const noLeakedSecrets = leaks.length === 0;
 
   const score =
     W.grounded * g.groundedRatio +
@@ -116,13 +139,14 @@ function scoreBrief(brief, activity, opts) {
 
   // Hard gate: never publish (least of all to BD) if ungrounded OR if a "why it matters"
   // line invents an impact figure.
-  const pass = g.grounded && noSpeculativeImpact && score >= floor;
+  const pass = g.grounded && noSpeculativeImpact && noLeakedSecrets && score >= floor;
 
   const notes = [];
   if (!g.grounded) notes.push("grounding: " + g.violations.length + " violation(s)");
   if (!structure) notes.push("structure: empty title/section/bullets");
   if (!wordBand) notes.push("word band: " + words + " not in [" + minW + ", " + maxW + "]");
   if (!noSpeculativeImpact) notes.push("speculative impact: " + spec.join(", "));
+  if (!noLeakedSecrets) notes.push("secret/PII leak: " + leaks.join(", "));
 
   return {
     score: Math.round(score * 100) / 100,
@@ -135,6 +159,7 @@ function scoreBrief(brief, activity, opts) {
       wordBand,
       words,
       noSpeculativeImpact,
+      noLeakedSecrets,
     },
     notes,
   };
