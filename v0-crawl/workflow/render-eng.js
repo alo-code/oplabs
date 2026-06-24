@@ -15,4 +15,8 @@ for (const s of b.sections || []) {
   }
 }
 
+const grounded = Math.round(((($json.grounding || {}).groundedRatio) || 0) * 100);
+const sources = (($json.activity || {}).artifacts || []).length;
+text += "\n_run metrics — eval " + (e.score != null ? e.score : "?") + " · grounded " + grounded + "% · " + sources + " artifacts cited_";
+
 return [{ json: { channel: "#eng-updates", text } }];

@@ -194,3 +194,17 @@ npm test
   (degrades gracefully). One grounded brief → trust gate → two framings → two Slack channels.
 - Next: user imports → pastes 4 Code nodes → adds 6 creds → runs (Test workflow) → we capture
   evidence/ from the real run; I debug from whatever it produces.
+
+## 2026-06-24 — guardrail demo + onchain V2 sketch
+
+- Demo ("demo the guardrail"): added `npm run demo` (src/demo.ts) — runs the SAME tested trust logic
+  on a good brief + two bad ones, no n8n/keys, on a fresh clone. Output: good → PUBLISHED (eval 1.0);
+  fake PR #9999 → HELD (grounded 67%); BD line inventing "40%" → HELD (speculative). Each held for
+  exactly one reason, and the HARD gate blocks #2/#3 even though their scores (0.83, 0.85) clear the
+  0.8 floor — the "a brief that scores 0.85 is still refused if it invents a metric" line. Captured to
+  evidence/trust-gate/. Added tsx for the script.
+- Onchain V2 sketch (the OP-specific differentiator → bridges to Option 2): v2-run/docs/onchain-seam.md
+  — same gate-before-act + audit-after machinery applied to agent SPEND on the OP Stack (smart accounts,
+  session keys, spend policy, auditable settlement). Grounding ↔ authorization; speculative ↔ over-policy.
+- Added an eval · grounded% · artifacts footer to render-eng.js so run metrics show in the digest.
+- Still pending (needs the user's n8n.cloud + creds): the REAL-data run + its evidence.
