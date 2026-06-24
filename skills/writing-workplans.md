@@ -1,7 +1,7 @@
 # Skill: writing a workplan
 
 A workplan in `todo/` turns a problem into an ordered set of slices. Use
-`WORKPLANTEMPLATE.md` as the skeleton. This is how to make it good.
+`../todo/WORKPLANTEMPLATE.md` as the skeleton. This is how to make it good.
 
 ## Start from user-visible pain, not solutions
 - Bad: "Add a Postgres memory store."

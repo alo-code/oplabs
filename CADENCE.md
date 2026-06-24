@@ -238,7 +238,7 @@ When a workplan completes, its durable record graduates to:
 This workplan follows `CADENCE.md`. Every slice ships contract → red →
 observability → green → evidence. Phase exit gates do not flip until every
 slice in the phase has all five stages logged. The per-slice fields are in
-`WORKPLANTEMPLATE.md`.
+`todo/WORKPLANTEMPLATE.md`.
 ```
 
 ---
