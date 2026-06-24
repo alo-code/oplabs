@@ -1,0 +1,18 @@
+# dependencies / build
+node_modules/
+dist/
+coverage/
+
+# secrets
+.env
+.env.local
+
+# logs — captured output goes inline in evidence/ READMEs, raw logs are not committed
+*.log
+
+# os
+.DS_Store
+
+# NOTE: todo/, evidence/, docs/, skills/, and notes.md are intentionally COMMITTED.
+# In the upstream cadence template, workplans/ is gitignored. For this repo the whole
+# point is to show the thinking, so the working artifacts are part of the deliverable.

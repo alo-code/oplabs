@@ -1,0 +1,169 @@
+/* ============================================================================
+   beacon.css — the one stylesheet for the Beacon docs site.
+   Co-branded for OP Labs (Optimism): black/white dominant, like oplabs.co,
+   with OP red kept as a sparing accent. Edit brand here; it cascades everywhere,
+   including into the hand-authored SVG diagrams (see the .dgm / .d-* classes).
+
+   Sections:
+     1. Brand tokens            (:root)        — change the brand in one place
+     2. Base + typography
+     3. Header / nav            (.site-top)    — italic Beacon wordmark, no dot
+     4. Layout primitives       (main, .sub, .tag, .card, .grid, table, code, .note)
+     5. Figures + SVG diagrams  (.dgm, .d-*)   — shared palette for hand-drawn SVG
+     6. Roadmap stage accents   (.stage-*)     — grayscale ramp
+     7. Footer / next-nav
+     8. Responsive
+
+   Authoring guide: skills/docs-site.md
+   ========================================================================== */
+
+/* 1. Brand tokens -------------------------------------------------------- */
+:root{
+  /* OP red — now a SPARING accent only: link hover, one callout border,
+     a few diagram highlights. Black is the primary brand color, like oplabs.co. */
+  --red:#FF0420;
+  --red-soft:#fff0f1;
+  --red-line:#ffd2d6;
+
+  --ink:#0a0a0a;          /* near-black — the primary brand color */
+  --muted:#565a63;        /* secondary text */
+  --gray-2:#7c818b;       /* grayscale ramp (roadmap "walk") */
+  --gray-3:#a6abb4;       /* grayscale ramp (roadmap "run") */
+  --line:#e7e7ea;         /* hairlines + box strokes */
+  --bg:#ffffff;
+  --surface:#f5f5f6;      /* cards, accented diagram boxes */
+  --good:#0a7d4d;
+
+  --maxw:940px;
+  --radius:12px;
+  /* OP Labs' real face is Riforma LL (Lineto, licensed — can't redistribute).
+     We approximate its Swiss-grotesque character with a system stack. To
+     pixel-match, vendor Riforma into assets/fonts/ and set --font to it. */
+  --font:'Helvetica Neue',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,monospace;
+}
+
+/* 2. Base + typography --------------------------------------------------- */
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font:16px/1.62 var(--font);color:var(--ink);background:var(--bg);
+  text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale}
+/* inline links: black, red only on hover — mono like oplabs.co */
+a{color:var(--ink);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:.6px}
+a:hover{color:var(--red)}
+h1{font-size:33px;line-height:1.14;letter-spacing:-.022em;font-weight:700;margin:.2em 0 .12em}
+h2{font-size:20px;letter-spacing:-.012em;margin:42px 0 10px;padding-top:12px;border-top:1px solid var(--line)}
+h3{font-size:13px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:22px 0 6px}
+p{margin:10px 0}
+strong,b{font-weight:700}
+em{font-style:italic}
+.sub{color:var(--muted);font-size:16px;margin-bottom:24px;max-width:64ch}
+.lede{font-size:17px}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+
+/* 3. Header / nav — italic wordmark, no dot ----------------------------- */
+.site-top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.9);
+  backdrop-filter:saturate(1.4) blur(8px);border-bottom:1px solid var(--line)}
+.site-top nav{max-width:var(--maxw);margin:0 auto;display:flex;align-items:center;
+  gap:8px;padding:12px 20px;flex-wrap:wrap}
+/* "Beacon" set in the same italic as the OP Labs "OP" wordmark */
+.brand{font-style:italic;font-weight:700;letter-spacing:-.015em;font-size:18px;
+  color:var(--ink);text-decoration:none;margin-right:6px}
+.brand:hover{color:var(--ink)}
+.nav-links{display:flex;gap:2px;flex-wrap:wrap}
+.nav-links a{color:var(--muted);text-decoration:none;padding:6px 11px;border-radius:8px;
+  font-size:14px;font-weight:600}
+.nav-links a:hover{background:var(--surface);color:var(--ink)}
+.nav-links a.active{color:var(--ink);background:var(--surface)}
+.nav-op{margin-left:auto;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;
+  padding:5px 12px;border:1px solid var(--line);border-radius:999px}
+.nav-op:hover{border-color:var(--ink);color:var(--ink)}
+
+/* 4. Layout primitives --------------------------------------------------- */
+main{max-width:var(--maxw);margin:0 auto;padding:34px 20px 70px}
+.tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.02em;
+  color:var(--ink);background:var(--surface);border:1px solid var(--line);padding:3px 11px;border-radius:999px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:15px 17px;margin:12px 0}
+.card b{color:var(--ink)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14.5px}
+th,td{text-align:left;padding:10px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+.why td:first-child{color:var(--ink);font-weight:700;white-space:nowrap}
+code{font-family:var(--mono);background:var(--surface);border:1px solid var(--line);
+  border-radius:5px;padding:1px 5px;font-size:13px}
+pre{background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  padding:14px 16px;overflow:auto;font-size:13px;line-height:1.5}
+pre code{background:none;border:0;padding:0}
+ul,ol{padding-left:20px} li{margin:6px 0}
+
+/* callout / note — the .red variant is one of the few deliberate red accents */
+.note{border:1px solid var(--line);border-left:3px solid var(--muted);
+  background:var(--surface);border-radius:8px;padding:12px 15px;margin:14px 0;font-size:14.5px}
+.note.red{border-left-color:var(--red)}
+.note.good{border-left-color:var(--good)}
+.note .k{font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--muted);margin-bottom:3px}
+
+/* 5. Figures + SVG diagram palette -------------------------------------- */
+/* Hand-authored SVGs add class="dgm" and use the .d-* classes so the brand
+   palette lives in ONE place. Emphasis is BLACK (.accent); red (.d-red) is the
+   rare "look here" highlight only. */
+figure{margin:22px 0;text-align:center}
+figcaption{color:var(--muted);font-size:13px;margin-top:9px;max-width:70ch;
+  margin-left:auto;margin-right:auto}
+.dgm{display:block;width:100%;height:auto;margin:0 auto;
+  border:1px solid var(--line);border-radius:var(--radius);background:var(--bg);padding:8px}
+.dgm text{font-family:var(--font)}
+.d-box{fill:#fff;stroke:var(--line);stroke-width:1.2}
+.d-box.accent{fill:var(--surface);stroke:var(--ink);stroke-width:1.5}
+.d-box.ghost{fill:var(--surface);stroke:var(--line);stroke-dasharray:5 4}
+.d-flow{stroke:var(--ink);stroke-width:1.8;fill:none}
+.d-flow.thin{stroke-width:1.4}
+.d-rule{stroke:var(--line);stroke-width:1}
+.d-arrow{fill:var(--ink)}
+.d-title{fill:var(--ink);font-weight:700}
+.d-label{fill:var(--muted)}
+.d-eyebrow{fill:var(--muted);font-weight:700;letter-spacing:.08em}
+.d-good{fill:var(--good);font-weight:700}
+.d-red{fill:var(--red);font-weight:700}   /* the rare highlight — use sparingly */
+
+/* 6. Roadmap stage accents — grayscale ramp (black → gray) -------------- */
+.stage{border:1px solid var(--line);border-top:3px solid var(--accent,var(--ink));
+  border-radius:var(--radius);padding:16px 18px;background:var(--bg)}
+.stage .badge{display:inline-flex;align-items:center;justify-content:center;
+  min-width:24px;height:24px;padding:0 8px;border-radius:999px;background:var(--ink);
+  color:#fff;font-size:12px;font-weight:800;letter-spacing:.04em}
+.stage h3{color:var(--ink);text-transform:none;font-size:17px;letter-spacing:-.01em;margin:10px 0 4px}
+.stage-crawl{--accent:var(--ink)}
+.stage-walk{--accent:var(--gray-2)}
+.stage-run{--accent:var(--gray-3)}
+.signal{font-size:13.5px;color:var(--muted);border-top:1px dashed var(--line);
+  margin-top:12px;padding-top:10px}
+.signal b{color:var(--ink)}
+
+/* 7. Footer + next-nav --------------------------------------------------- */
+.next{display:flex;justify-content:space-between;margin-top:42px;gap:10px;flex-wrap:wrap}
+.next a{flex:1 1 0;min-width:160px;text-decoration:none;border:1px solid var(--line);
+  border-radius:var(--radius);padding:14px 16px;color:var(--ink)}
+.next a:hover{border-color:var(--ink)}
+.next a:hover .v{color:var(--red)}
+.next .k{font-size:12px;color:var(--muted)} .next .v{font-weight:800;color:var(--ink)}
+.site-foot{border-top:1px solid var(--line);background:var(--surface)}
+.site-foot .foot-in{max-width:var(--maxw);margin:0 auto;padding:20px;display:flex;
+  align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.foot-brand{font-style:italic;font-weight:700;color:var(--ink)}
+.site-foot a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+.site-foot a:hover{color:var(--red)}
+.foot-tag{margin-left:auto;font-style:italic}
+
+/* 8. Responsive ---------------------------------------------------------- */
+@media(max-width:680px){
+  .grid,.grid-3{grid-template-columns:1fr}
+  h1{font-size:27px}
+  .nav-op{margin-left:0}
+  .foot-tag{margin-left:0}
+}

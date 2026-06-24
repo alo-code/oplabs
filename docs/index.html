@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Beacon — Approach · OP Labs Case Study (Option 1)</title>
+<link rel="stylesheet" href="assets/beacon.css" />
+</head>
+<body>
+<!-- NAV: canonical block — keep in sync across pages (see skills/docs-site.md) -->
+<header class="site-top"><nav>
+  <a class="brand" href="index.html">Beacon</a>
+  <div class="nav-links">
+    <a href="index.html" class="active">Overview</a>
+    <a href="problem-map.html">Problem map</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="crawl-walk-run.html">Roadmap</a>
+  </div>
+  <a class="nav-op" href="https://www.oplabs.co/" target="_blank" rel="noopener">for OP Labs ↗</a>
+</nav></header>
+
+<main>
+  <span class="tag">OP Labs Case Study · Option 1</span>
+  <h1>Beacon: an always-on agent platform for internal AI workflows</h1>
+  <p class="sub lede">The approach document. Problem → solution → why → stakeholders →
+  plan, written for a non-technical reader. The pages link together, top-right.</p>
+
+  <figure>
+    <svg class="dgm" viewBox="0 0 880 200" role="img" aria-label="From a laptop to an always-on platform">
+      <defs>
+        <marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path class="d-arrow" d="M0,0 L9,4.5 L0,9 Z"/>
+        </marker>
+      </defs>
+      <text class="d-label" x="145" y="44" text-anchor="middle" font-size="13">Today</text>
+      <rect class="d-box" x="20" y="58" width="250" height="92" rx="12"/>
+      <text class="d-title" x="145" y="92" text-anchor="middle" font-size="15">One laptop, many scripts</text>
+      <text class="d-label" x="145" y="116" text-anchor="middle" font-size="12.5">manual auth · no memory</text>
+      <text class="d-label" x="145" y="134" text-anchor="middle" font-size="12.5">no observability · sleeps</text>
+      <line class="d-flow" x1="285" y1="104" x2="375" y2="104" marker-end="url(#ah)"/>
+      <text class="d-label" x="625" y="20" text-anchor="middle" font-size="13">With Beacon</text>
+      <rect class="d-box accent" x="390" y="34" width="470" height="140" rx="14"/>
+      <g font-size="12.5">
+        <rect class="d-box" x="406" y="52" width="134" height="44" rx="9"/>
+        <text class="d-title" x="473" y="79" text-anchor="middle">Always-on runtime</text>
+        <rect class="d-box" x="556" y="52" width="134" height="44" rx="9"/>
+        <text class="d-title" x="623" y="79" text-anchor="middle">Shared memory</text>
+        <rect class="d-box" x="706" y="52" width="138" height="44" rx="9"/>
+        <text class="d-title" x="775" y="79" text-anchor="middle">Observability</text>
+        <rect class="d-box" x="406" y="108" width="200" height="44" rx="9"/>
+        <text class="d-title" x="506" y="135" text-anchor="middle">Connectors (central auth)</text>
+        <rect class="d-box" x="622" y="108" width="222" height="44" rx="9"/>
+        <text class="d-title" x="733" y="135" text-anchor="middle">Control plane for non-engineers</text>
+      </g>
+    </svg>
+    <figcaption>One laptop-bound script → a platform that is always on, shares memory and auth, and is observable.</figcaption>
+  </figure>
+
+  <h2>The problem</h2>
+  <p>OP Labs runs a growing set of AI workflows over company data in Slack, HubSpot,
+  Notion, Drive, Calendar, GitHub, and onchain sources — weekly exec briefs, a deal
+  decision-log, prospect intel, a Q&amp;A agent. They produce <em>real</em> value, but
+  they're stitched together by one person on a laptop and they don't scale:</p>
+  <div class="grid">
+    <div class="card">🔁 <b>Context is re-fetched every task</b> — slow and expensive; cost grows per workflow.</div>
+    <div class="card">😴 <b>It sleeps when the laptop sleeps</b> — no schedule, no reliability.</div>
+    <div class="card">🔑 <b>Auth is per-source and manual</b> — brittle, and a security blind spot.</div>
+    <div class="card">🧠 <b>No shared memory</b> — agents can't build on each other's context.</div>
+    <div class="card">🔭 <b>No observability</b> — failures are silent; nobody knows the cost.</div>
+    <div class="card">🙋 <b>Can't hand it to a non-engineer</b> — one person is the bottleneck and the risk.</div>
+  </div>
+  <p>See the full mapping of each pain to its fix on the <a href="problem-map.html">Problem map</a>.</p>
+
+  <h2>The proposed solution</h2>
+  <p><b>Beacon</b> is a thin, always-on platform that sits over OP Labs' existing data
+  sources and runs the AI workflows as managed services — with <b>shared memory</b>,
+  <b>centralized auth</b>, <b>built-in observability</b>, and a <b>control plane a
+  non-engineer can use</b>. Crucially, trust is a feature: every output is
+  <b>grounded</b> in a real source and every run is <b>measured</b> (cost, latency,
+  quality), so the org can believe what comes out. Architecture detail is on the
+  <a href="architecture.html">Architecture</a> page.</p>
+
+  <h3>Why this, over the alternatives</h3>
+  <table class="why">
+    <tr><th>Alternative</th><th>Why not (alone)</th></tr>
+    <tr><td>Keep the laptop scripts</td><td>Single point of failure, no trust mechanism, cost compounds with every new workflow. This is the status quo we were asked to fix.</td></tr>
+    <tr><td>Buy an off-the-shelf agent platform</td><td>Our data lives across private OP systems + onchain; generic tools don't ground in our sources or meet our security/governance bar, and add lock-in. We <em>reuse</em> open standards (MCP, model SDKs) — we don't outsource the trust layer.</td></tr>
+    <tr><td>Let each team build its own</td><td>Duplicated auth, memory, and observability; inconsistent (and unauditable) trust; no shared context across agents.</td></tr>
+  </table>
+  <p>Beacon is the smallest thing that removes the six pains <em>and</em> earns trust —
+  built incrementally so it proves value before it asks for investment.</p>
+
+  <h2>Stakeholders &amp; how I'd gather requirements</h2>
+  <p>OP Labs is ~<b>75 people</b>, roughly <b>half in sales/BD</b> and half engineers.
+  That split matters: the sales/BD half are the heaviest <em>consumers</em> of the AI
+  output (prospect intel, deal log) yet — being non-engineers — are exactly the people
+  <em>locked out</em> of self-serving it today. They're the largest under-served audience.</p>
+  <div class="grid">
+    <div class="card"><b>Sales / BD / GTM</b> (~37) — consume prospect intel + deal log, can't self-serve. <span style="color:var(--muted)">Want it before every call; trust = sources they can click, never stale.</span></div>
+    <div class="card"><b>Engineering</b> (~37) — the builders; one of them <em>is</em> the laptop. <span style="color:var(--muted)">Want reusable connectors/memory + loud failures; trust = it runs without them.</span></div>
+    <div class="card"><b>Leadership / Exec</b> — read the brief, own buy-in + budget. <span style="color:var(--muted)">Trust = on time, grounded enough to defend a decision.</span></div>
+    <div class="card"><b>Security / Legal / Compliance</b> — privacy, secrets, audit. <span style="color:var(--muted)">Bring them in at crawl; they gate the self-serve (Run) stage.</span></div>
+  </div>
+  <p><b>Method — gather, then keep gathering.</b> Rather than guess, I'd send a short,
+  two-track survey (Slack workflow / Google Form — consumers vs. builders) to all 75 and
+  score the workflows by <code>reach × frequency × pain ÷ effort</code> so the roadmap is
+  pull-driven, not one person's hunch. The same 3-question pulse re-runs at each stage gate
+  — that's how requirements keep <em>shaping and evolving</em> the plan (and it doubles as
+  an adoption metric). The instrument decides build order; the trust-risk filter decides
+  what's safe to ship <em>first</em> — which is why crawl is the exec brief even though raw
+  demand ranks prospect intel higher.</p>
+
+  <h2>The plan, in one line</h2>
+  <p><b>Crawl:</b> make one workflow (the weekly exec brief) always-on, grounded, and
+  trusted. <b>Walk:</b> turn the one-off into reusable connectors + memory + control
+  plane so the 2nd and 3rd workflows cost days. <b>Run:</b> org-wide, self-serve,
+  governed. Each stage earns the next via a <em>signal</em>, not a date — see the
+  <a href="crawl-walk-run.html">Roadmap</a>.</p>
+
+  <h2 id="language">A note on language (TypeScript)</h2>
+  <p>The JD lists Python and Go; this prototype is TypeScript — a deliberate call.
+  The case study grades judgment and AI orchestration, and "it has to run," so the
+  strongest language gives the cleanest working slice. The agent/MCP/onchain tooling
+  (Vercel AI SDK, MCP TypeScript SDK, <code>viem</code>) is first-class in TS, and
+  end-to-end type safety across connectors → memory → agent → UI removes a whole bug
+  class — which matters when handing to a non-engineer. The <b>production vision stays
+  polyglot</b> (Python for eval/ML-heavy agents, a Go hot path where a connector needs
+  it) behind language-agnostic seams: typed tool schemas, a message bus, HTTP.</p>
+
+  <div class="next">
+    <a href="problem-map.html"><div class="k">Next →</div><div class="v">Problem map</div></a>
+    <a href="architecture.html"><div class="k">Then →</div><div class="v">Architecture</div></a>
+    <a href="crawl-walk-run.html"><div class="k">Then →</div><div class="v">Roadmap</div></a>
+  </div>
+</main>
+
+<footer class="site-foot"><div class="foot-in">
+  <span class="foot-brand">Beacon</span>
+  <span>A case study for <a href="https://www.oplabs.co/" target="_blank" rel="noopener">OP Labs</a> · Option 1</span>
+  <span class="foot-tag">“Scale Ethereum, Build Optimism”</span>
+</div></footer>
+</body>
+</html>
