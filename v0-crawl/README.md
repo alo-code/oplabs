@@ -9,7 +9,7 @@ The weekly **exec brief**, built as an **n8n.cloud workflow** with a small,
 **tested TypeScript trust core**:
 
 ```
-n8n.cloud:  Schedule(cron) → HTTP→GitHub (commits + merged PRs)
+n8n.cloud:  Schedule(cron) → HTTP→5 sources (GitHub, Monday, Notion, Slack, Drive)
             → HTTP→Claude (grounded summary) → Code node [trust]
             → two renders: eng + BD → Slack/email      (run history = telemetry)
                                     │
@@ -31,8 +31,8 @@ eval-checked against speculative impact, so eng-derived claims are safe for BD t
 ## Layout
 
 - `workflow/exec-brief.json` — the n8n workflow export (import into n8n.cloud).
-- `src/trust/grounding.ts` — every brief bullet must cite a real SHA/PR present in the fetched activity.
-- `src/trust/evals.ts` — structure + 100%-grounded + word-band → an `eval_score`.
+- `src/trust/grounding.ts` — every brief bullet must cite a real artifact (any source: GitHub / Monday / Notion / Slack / Drive) present in the fetched activity.
+- `src/trust/evals.ts` — structure + 100%-grounded + word-band + no-speculative-impact → an `eval_score`.
 - `test/` — vitest: a known-bad (ungrounded) brief → red; a grounded one → green.
 - `evidence/` — a real run on real repo data (brief + eval score + cost).
 

@@ -49,12 +49,16 @@
   eng-derived claims BD repeats are <b>safe</b> (every line cites a real PR), and the “why it
   matters” lines live <em>inside</em> the grounded brief, eval-checked against speculative
   impact. The trust gate runs once; only render + deliver fan out.</p>
+  <p>Crawl pulls a small, high-signal set — GitHub, Monday, Notion, a curated Slack channel,
+  and a Drive folder — all feeding that one grounded brief. Each source is just an n8n node,
+  and the trust gate checks every claim against whatever was fetched, so more sources make the
+  update <em>fuller</em>, not riskier (the trust core is source-agnostic — it keys off id + URL).</p>
 
   <h3>Tech stack</h3>
   <table>
     <tr><th>Layer</th><th>Choice</th></tr>
     <tr><td>Orchestration · schedule · UI</td><td><b>n8n.cloud</b> — Schedule trigger, run history (observability), visual editor (the non-engineer control surface)</td></tr>
-    <tr><td>Data in</td><td><b>GitHub REST API</b> via an n8n HTTP Request node (commits + merged PRs in the window)</td></tr>
+    <tr><td>Data in</td><td><b>GitHub</b> (commits/PRs) + <b>Monday</b>, <b>Notion</b>, a curated <b>Slack</b> channel &amp; a <b>Drive</b> folder — each a low-lift n8n node, each citable by id or URL</td></tr>
     <tr><td>Summarization</td><td><b>Anthropic Claude API</b> via an n8n HTTP Request node</td></tr>
     <tr><td>Trust core</td><td><b>TypeScript</b> — <code>zod</code> at the parse boundary, pure grounding + eval functions, <code>vitest</code> (4/4 green)</td></tr>
     <tr><td>Render · delivery</td><td>two renders from one grounded brief: eng digest + BD brief → two Slack channels (n8n nodes)</td></tr>
@@ -74,8 +78,8 @@
         <text class="d-title" x="80" y="70" text-anchor="middle">Schedule</text>
         <text class="d-label" x="80" y="88" text-anchor="middle" font-size="10.5">cron</text>
         <rect class="d-box" x="159" y="44" width="129" height="58" rx="9"/>
-        <text class="d-title" x="223" y="70" text-anchor="middle">GitHub</text>
-        <text class="d-label" x="223" y="88" text-anchor="middle" font-size="10.5">HTTP · commits/PRs</text>
+        <text class="d-title" x="223" y="70" text-anchor="middle">Sources</text>
+        <text class="d-label" x="223" y="88" text-anchor="middle" font-size="10.5">GitHub +4</text>
         <rect class="d-box" x="302" y="44" width="129" height="58" rx="9"/>
         <text class="d-title" x="366" y="70" text-anchor="middle">Claude</text>
         <text class="d-label" x="366" y="88" text-anchor="middle" font-size="10.5">HTTP · summary</text>

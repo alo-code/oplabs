@@ -162,3 +162,21 @@ npm test
   the eval flags speculative impact (no "40% faster" unless it's in the cited artifact).
   That's what makes eng-derived claims safe for BD to repeat — the trust core earning its keep.
 - GitHub-only stays a crawl constraint; a 2nd source (HubSpot / deal context) is walk.
+
+## 2026-06-24 — v0 goes multi-source (low-lift via n8n)
+
+- Q (review): GitHub-only feels thin — can we add Monday/Notion/Slack/Drive for a fuller
+  update without blowing scope? Answer: yes — n8n makes it low-lift (native nodes) AND the
+  trust core is source-agnostic, so a new source enlarges the citable pool, not the code.
+  Refines the earlier "GitHub-only crawl constraint" → "grounded + contained", not literally
+  one source.
+- Decision: v0 pulls GitHub + Monday + Notion + a curated Slack channel + a Drive folder.
+  Guardrails: Slack = ONE channel, Drive = ONE folder; every artifact citable by id or URL.
+  Honest caveat: the real RUN now needs 5 creds + real data; first evidence run can use
+  whatever subset is ready (GitHub guaranteed; workflow degrades gracefully).
+- Built (TDD, green): generalized the trust core to multi-source — Artifact is now
+  {kind, source, id, url, label}; grounding matches by exact id, short-SHA prefix, OR URL.
+  Added BD-safety: BriefBullet.whyItMatters + an eval check that HARD-FAILS a grounded brief
+  if a "why it matters" line invents a %/× figure not in a cited artifact. typecheck clean,
+  5/5 vitest green.
+- Next: the n8n workflow (5 fetch nodes → Claude → trust Code node → 2 renders → 2 channels).

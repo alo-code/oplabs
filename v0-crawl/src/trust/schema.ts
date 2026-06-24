@@ -1,44 +1,42 @@
 // schema.ts — the contract at the n8n → trust-core boundary.
 //
-// n8n fetches GitHub activity and asks Claude for a brief, then hands both to
-// the trust core as JSON. We *parse, don't trust* (zod) at that boundary; the
-// grounding/evals functions then work on already-typed values, so their logic
-// stays pure and can be mirrored verbatim into an n8n Code node.
+// n8n fetches activity from each source (GitHub, Monday, Notion, Slack, Drive) and
+// asks Claude for a brief, then hands both to the trust core as JSON. We *parse,
+// don't trust* (zod) at that boundary; grounding/evals then work on already-typed
+// values, so their logic stays pure and mirrors verbatim into an n8n Code node.
 
 import { z } from "zod";
 
-/** A real unit of source activity a brief is allowed to cite. */
-export const ArtifactSchema = z.discriminatedUnion("kind", [
-  z.object({
-    kind: z.literal("commit"),
-    id: z.string(), // commit SHA (may be cited by short prefix)
-    repo: z.string(),
-    message: z.string(),
-    url: z.string().url().optional(),
-  }),
-  z.object({
-    kind: z.literal("pr"),
-    id: z.string(), // "#123"
-    repo: z.string(),
-    title: z.string(),
-    url: z.string().url().optional(),
-  }),
-]);
+// One kind per source shape. commit/pr = GitHub · issue = Monday/Linear ·
+// page = Notion · message = Slack · file = Drive. Adding a source = add a kind +
+// an n8n fetch node; grounding/evals don't change (they key off id + url).
+export const ARTIFACT_KINDS = ["commit", "pr", "issue", "page", "message", "file"] as const;
+
+/** A real, linkable unit of source activity a brief is allowed to cite. */
+export const ArtifactSchema = z.object({
+  kind: z.enum(ARTIFACT_KINDS),
+  source: z.string().min(1), // "github" | "monday" | "notion" | "slack" | "drive"
+  id: z.string().min(1), // SHA · "#412" · "MON-1187" · page id · slack ts · file id
+  url: z.string().url(), // the verifiable link — every artifact must be linkable
+  label: z.string(), // commit msg · PR/item title · page title · message text · file name
+});
 export type Artifact = z.infer<typeof ArtifactSchema>;
 
-/** The real GitHub activity for the reporting window. */
+/** The real activity for the reporting window, across all sources. */
 export const ActivitySchema = z.object({
-  repos: z.array(z.string()).min(1),
-  from: z.string(), // ISO timestamp, window start
-  to: z.string(), // ISO timestamp, window end
+  from: z.string(), // ISO, window start
+  to: z.string(), // ISO, window end
   artifacts: z.array(ArtifactSchema),
 });
 export type Activity = z.infer<typeof ActivitySchema>;
 
-/** One brief bullet, with the artifact ids it claims to be grounded in. */
+/** One brief bullet. `text` is the technical line (eng digest); `whyItMatters` is
+ *  the optional customer-relevance line (BD brief). Both render from this one
+ *  grounded item, so the BD framing can't introduce an unsourced claim. */
 export const BriefBulletSchema = z.object({
   text: z.string().min(1),
-  citations: z.array(z.string()), // artifact ids, e.g. ["a1b2c3d", "#412"]
+  whyItMatters: z.string().optional(),
+  citations: z.array(z.string()), // artifact ids or urls
 });
 export type BriefBullet = z.infer<typeof BriefBulletSchema>;
 
