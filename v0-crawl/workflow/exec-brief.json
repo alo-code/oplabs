@@ -1,0 +1,238 @@
+{
+  "name": "Beacon — Weekly Exec Brief (v0-crawl)",
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [ { "field": "cronExpression", "expression": "0 13 * * 1" } ] }
+      },
+      "id": "11111111-0000-0000-0000-000000000001",
+      "name": "Schedule (Mon 13:00)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [ 0, 320 ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{ $env.GITHUB_REPO || 'ethereum-optimism/optimism' }}/commits",
+        "sendQuery": true,
+        "queryParameters": { "parameters": [
+          { "name": "since", "value": "={{ $now.minus({ days: 7 }).toISO() }}" },
+          { "name": "per_page", "value": "30" }
+        ] },
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "Accept", "value": "application/vnd.github+json" },
+          { "name": "User-Agent", "value": "beacon" }
+        ] },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "11111111-0000-0000-0000-000000000002",
+      "name": "GitHub: commits",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [ 240, 80 ],
+      "credentials": { "httpHeaderAuth": { "id": "REPLACE_GITHUB", "name": "GitHub token (Authorization: Bearer …)" } }
+    },
+    {
+      "parameters": { "url": "https://api.monday.com/v2", "options": {} },
+      "id": "11111111-0000-0000-0000-000000000003",
+      "name": "Monday: items",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [ 240, 200 ],
+      "disabled": true,
+      "notes": "GraphQL query for items updated in the window; map in Build activity. Enable when creds + board id are set."
+    },
+    {
+      "parameters": { "url": "https://api.notion.com/v1/search", "options": {} },
+      "id": "11111111-0000-0000-0000-000000000004",
+      "name": "Notion: pages",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [ 240, 320 ],
+      "disabled": true,
+      "notes": "Pages edited in the window (or a specific DB). Map in Build activity."
+    },
+    {
+      "parameters": { "url": "https://slack.com/api/conversations.history", "options": {} },
+      "id": "11111111-0000-0000-0000-000000000005",
+      "name": "Slack: #releases",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [ 240, 440 ],
+      "disabled": true,
+      "notes": "ONE curated channel only (e.g. #releases). oldest = window start; map ts + permalink in Build activity."
+    },
+    {
+      "parameters": { "url": "https://www.googleapis.com/drive/v3/files", "options": {} },
+      "id": "11111111-0000-0000-0000-000000000006",
+      "name": "Drive: folder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [ 240, 560 ],
+      "disabled": true,
+      "notes": "Files modified in ONE folder: q='<folderId>' in parents and modifiedTime > window. Map in Build activity."
+    },
+    {
+      "parameters": {
+        "jsCode": "// PASTE workflow/build-activity.js here (see workflow/README.md).\nthrow new Error('Build activity not configured — paste build-activity.js');"
+      },
+      "id": "11111111-0000-0000-0000-000000000007",
+      "name": "Build activity",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [ 480, 320 ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "anthropic-version", "value": "2023-06-01" },
+          { "name": "content-type", "value": "application/json" }
+        ] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: $env.ANTHROPIC_MODEL || 'claude-sonnet-4-6', max_tokens: 1800, system: 'See workflow/README.md for the full system prompt: produce STRICT JSON matching the Brief schema (sections[].bullets[] with text, whyItMatters, citations). Every bullet must cite an artifact id or url from the provided activity. Never invent a number or % that is not in a cited artifact.', messages: [ { role: 'user', content: 'Activity (only cite these):\\n' + JSON.stringify($json.activity) } ] }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "11111111-0000-0000-0000-000000000008",
+      "name": "Claude: summarize",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [ 720, 320 ],
+      "credentials": { "httpHeaderAuth": { "id": "REPLACE_ANTHROPIC", "name": "Anthropic (x-api-key: …)" } }
+    },
+    {
+      "parameters": {
+        "jsCode": "// PASTE workflow/trust-node.js here (mirrors the tested src/trust/). Returns { brief, activity, grounding, eval, pass }.\nthrow new Error('Trust gate not configured — paste trust-node.js');"
+      },
+      "id": "11111111-0000-0000-0000-000000000009",
+      "name": "Trust gate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [ 960, 320 ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "loose", "version": 2 },
+          "combinator": "and",
+          "conditions": [ {
+            "id": "cond-pass",
+            "leftValue": "={{ $json.pass }}",
+            "rightValue": "",
+            "operator": { "type": "boolean", "operation": "true", "singleValue": true }
+          } ]
+        },
+        "options": {}
+      },
+      "id": "11111111-0000-0000-0000-00000000000a",
+      "name": "Gate passed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [ 1200, 320 ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// PASTE workflow/render-eng.js here. Returns { channel, text } for the eng digest.\nthrow new Error('Render eng not configured — paste render-eng.js');"
+      },
+      "id": "11111111-0000-0000-0000-00000000000b",
+      "name": "Render eng",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [ 1440, 180 ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "channelId": { "__rl": true, "value": "={{ $json.channel }}", "mode": "name" },
+        "messageType": "text",
+        "text": "={{ $json.text }}",
+        "otherOptions": {}
+      },
+      "id": "11111111-0000-0000-0000-00000000000c",
+      "name": "Post → #eng-updates",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [ 1680, 180 ],
+      "credentials": { "slackApi": { "id": "REPLACE_SLACK", "name": "Slack (bot token)" } }
+    },
+    {
+      "parameters": {
+        "jsCode": "// PASTE workflow/render-bd.js here. Returns { channel, text } for the BD brief.\nthrow new Error('Render BD not configured — paste render-bd.js');"
+      },
+      "id": "11111111-0000-0000-0000-00000000000d",
+      "name": "Render BD",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [ 1440, 360 ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "channelId": { "__rl": true, "value": "={{ $json.channel }}", "mode": "name" },
+        "messageType": "text",
+        "text": "={{ $json.text }}",
+        "otherOptions": {}
+      },
+      "id": "11111111-0000-0000-0000-00000000000e",
+      "name": "Post → #gtm-shipped",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [ 1680, 360 ],
+      "credentials": { "slackApi": { "id": "REPLACE_SLACK", "name": "Slack (bot token)" } }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "channelId": { "__rl": true, "value": "#beacon-ops", "mode": "name" },
+        "messageType": "text",
+        "text": "=Beacon held this week's brief (gate failed). Reasons: {{ JSON.stringify($json.eval.notes) }}",
+        "otherOptions": {}
+      },
+      "id": "11111111-0000-0000-0000-00000000000f",
+      "name": "Held: notify ops",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [ 1440, 540 ],
+      "credentials": { "slackApi": { "id": "REPLACE_SLACK", "name": "Slack (bot token)" } }
+    }
+  ],
+  "connections": {
+    "Schedule (Mon 13:00)": { "main": [ [
+      { "node": "GitHub: commits", "type": "main", "index": 0 },
+      { "node": "Monday: items", "type": "main", "index": 0 },
+      { "node": "Notion: pages", "type": "main", "index": 0 },
+      { "node": "Slack: #releases", "type": "main", "index": 0 },
+      { "node": "Drive: folder", "type": "main", "index": 0 }
+    ] ] },
+    "GitHub: commits": { "main": [ [ { "node": "Build activity", "type": "main", "index": 0 } ] ] },
+    "Monday: items": { "main": [ [ { "node": "Build activity", "type": "main", "index": 0 } ] ] },
+    "Notion: pages": { "main": [ [ { "node": "Build activity", "type": "main", "index": 0 } ] ] },
+    "Slack: #releases": { "main": [ [ { "node": "Build activity", "type": "main", "index": 0 } ] ] },
+    "Drive: folder": { "main": [ [ { "node": "Build activity", "type": "main", "index": 0 } ] ] },
+    "Build activity": { "main": [ [ { "node": "Claude: summarize", "type": "main", "index": 0 } ] ] },
+    "Claude: summarize": { "main": [ [ { "node": "Trust gate", "type": "main", "index": 0 } ] ] },
+    "Trust gate": { "main": [ [ { "node": "Gate passed?", "type": "main", "index": 0 } ] ] },
+    "Gate passed?": { "main": [
+      [ { "node": "Render eng", "type": "main", "index": 0 }, { "node": "Render BD", "type": "main", "index": 0 } ],
+      [ { "node": "Held: notify ops", "type": "main", "index": 0 } ]
+    ] },
+    "Render eng": { "main": [ [ { "node": "Post → #eng-updates", "type": "main", "index": 0 } ] ] },
+    "Render BD": { "main": [ [ { "node": "Post → #gtm-shipped", "type": "main", "index": 0 } ] ] }
+  }
+}

@@ -180,3 +180,17 @@ npm test
   if a "why it matters" line invents a %/× figure not in a cited artifact. typecheck clean,
   5/5 vitest green.
 - Next: the n8n workflow (5 fetch nodes → Claude → trust Code node → 2 renders → 2 channels).
+
+## 2026-06-24 — authored the n8n workflow
+
+- Built v0-crawl/workflow/: exec-brief.json (15-node graph, validated as JSON) + paste-ready
+  Code nodes — trust-node.js (faithful mirror of the tested src/trust/), build-activity.js,
+  render-eng.js, render-bd.js — + a production runbook (README.md).
+- Honest boundary (told the user up front): I can't run/verify it in their n8n.cloud or handle
+  credentials. Code nodes ship as fail-loud placeholders (throw until pasted). `node --check`
+  flags the top-level `return` — that's the n8n Code-node contract (valid in n8n), not a bug;
+  the gate logic is verified via the TS tests (5/5).
+- 5 sources wired: GitHub enabled; Monday/Notion/Slack(1 ch)/Drive disabled-until-configured
+  (degrades gracefully). One grounded brief → trust gate → two framings → two Slack channels.
+- Next: user imports → pastes 4 Code nodes → adds 6 creds → runs (Test workflow) → we capture
+  evidence/ from the real run; I debug from whatever it produces.
