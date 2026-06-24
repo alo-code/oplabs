@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Beacon — Versions (design, stack & architecture) · OP Labs Case Study</title>
+<link rel="stylesheet" href="assets/beacon.css" />
+</head>
+<body>
+<header class="site-top"><nav>
+  <a class="brand" href="index.html">Beacon</a>
+  <div class="nav-links">
+    <a href="index.html">Overview</a>
+    <a href="problem-map.html">Problem map</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="crawl-walk-run.html">Roadmap</a>
+    <a href="versions.html" class="active">Versions</a>
+  </div>
+  <a class="nav-op" href="https://www.oplabs.co/" target="_blank" rel="noopener">for OP Labs ↗</a>
+</nav></header>
+
+<main>
+  <span class="tag">Build plan</span>
+  <h1>The three versions — design, stack &amp; architecture</h1>
+  <p class="sub lede">The crawl → walk → run plan is three directories
+  (<code>v0-crawl</code> → <code>v1-walk</code> → <code>v2-run</code>), so the line of
+  thinking is browsable. <b>v0 runs today</b>; v1 and v2 are design-led, scaffolded
+  code-ready. In the diagrams, <b>solid = built</b>, <b>dashed = design-only</b>.</p>
+
+  <table>
+    <tr><th>Version</th><th>Stage</th><th>State</th><th>Stack in one line</th></tr>
+    <tr><td><code>v0-crawl</code></td><td>MVP — one workflow, trusted</td><td><b>Runs today</b></td><td>n8n.cloud + a tested TypeScript trust core</td></tr>
+    <tr><td><code>v1-walk</code></td><td>The platform</td><td>Design-only</td><td>TS services · Postgres+pgvector · connector library · control-plane UI</td></tr>
+    <tr><td><code>v2-run</code></td><td>The vision</td><td>Design-only</td><td>Self-serve + governance + multi-provider + onchain seam</td></tr>
+  </table>
+
+  <!-- ============================ v0-crawl ============================ -->
+  <h2>v0-crawl — the runnable version</h2>
+  <h3>Design</h3>
+  <p>The weekly <b>exec brief</b> as an <b>n8n.cloud workflow</b> with a small, <b>tested
+  TypeScript trust core</b>. Picking n8n is the design: it removes three of the six pains
+  <em>by construction</em> — always-on (its scheduler, not a laptop), observability (its run
+  history), and hand-to-a-non-engineer (a visual workflow they can read, trigger, edit). The
+  only thing kept as real, tested code is the trust core, because grounded + measured output
+  is the differentiator.</p>
+
+  <h3>Tech stack</h3>
+  <table>
+    <tr><th>Layer</th><th>Choice</th></tr>
+    <tr><td>Orchestration · schedule · UI</td><td><b>n8n.cloud</b> — Schedule trigger, run history (observability), visual editor (the non-engineer control surface)</td></tr>
+    <tr><td>Data in</td><td><b>GitHub REST API</b> via an n8n HTTP Request node (commits + merged PRs in the window)</td></tr>
+    <tr><td>Summarization</td><td><b>Anthropic Claude API</b> via an n8n HTTP Request node</td></tr>
+    <tr><td>Trust core</td><td><b>TypeScript</b> — <code>zod</code> at the parse boundary, pure grounding + eval functions, <code>vitest</code> (4/4 green)</td></tr>
+    <tr><td>Render · delivery</td><td>HTML / markdown → Slack / email (n8n nodes)</td></tr>
+    <tr><td>Docs · hosting</td><td>Static HTML → <b>GitHub Pages</b> (oplabs.daciasec.net)</td></tr>
+  </table>
+
+  <h3>Architecture</h3>
+  <figure>
+    <svg class="dgm" viewBox="0 0 880 215" role="img" aria-label="v0-crawl: the n8n workflow plus the TypeScript trust core">
+      <defs>
+        <marker id="v0a" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path class="d-arrow" d="M0,0 L8,4 L0,8 Z"/></marker>
+        <marker id="v0up" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path class="d-arrow" d="M0,0 L8,4 L0,8 Z"/></marker>
+      </defs>
+      <text class="d-label" x="440" y="26" text-anchor="middle" font-size="11">n8n.cloud workflow — schedule + run history (observability)</text>
+      <g font-size="12.5">
+        <rect class="d-box" x="16" y="44" width="129" height="58" rx="9"/>
+        <text class="d-title" x="80" y="70" text-anchor="middle">Schedule</text>
+        <text class="d-label" x="80" y="88" text-anchor="middle" font-size="10.5">cron</text>
+        <rect class="d-box" x="159" y="44" width="129" height="58" rx="9"/>
+        <text class="d-title" x="223" y="70" text-anchor="middle">GitHub</text>
+        <text class="d-label" x="223" y="88" text-anchor="middle" font-size="10.5">HTTP · commits/PRs</text>
+        <rect class="d-box" x="302" y="44" width="129" height="58" rx="9"/>
+        <text class="d-title" x="366" y="70" text-anchor="middle">Claude</text>
+        <text class="d-label" x="366" y="88" text-anchor="middle" font-size="10.5">HTTP · summary</text>
+        <rect class="d-box accent" x="445" y="44" width="129" height="58" rx="9"/>
+        <text class="d-red" x="509" y="70" text-anchor="middle">Trust</text>
+        <text class="d-label" x="509" y="88" text-anchor="middle" font-size="10.5">Code node · gate</text>
+        <rect class="d-box" x="588" y="44" width="129" height="58" rx="9"/>
+        <text class="d-title" x="652" y="70" text-anchor="middle">Render</text>
+        <text class="d-label" x="652" y="88" text-anchor="middle" font-size="10.5">HTML / MD</text>
+        <rect class="d-box" x="731" y="44" width="129" height="58" rx="9"/>
+        <text class="d-title" x="795" y="70" text-anchor="middle">Deliver</text>
+        <text class="d-label" x="795" y="88" text-anchor="middle" font-size="10.5">Slack · email</text>
+
+        <line class="d-flow thin" x1="145" y1="73" x2="158" y2="73" marker-end="url(#v0a)"/>
+        <line class="d-flow thin" x1="288" y1="73" x2="301" y2="73" marker-end="url(#v0a)"/>
+        <line class="d-flow thin" x1="431" y1="73" x2="444" y2="73" marker-end="url(#v0a)"/>
+        <line class="d-flow thin" x1="574" y1="73" x2="587" y2="73" marker-end="url(#v0a)"/>
+        <line class="d-flow thin" x1="717" y1="73" x2="730" y2="73" marker-end="url(#v0a)"/>
+      </g>
+      <rect class="d-box" x="380" y="138" width="259" height="56" rx="9"/>
+      <text class="d-title" x="509" y="162" text-anchor="middle" font-size="12">TS trust core — <tspan font-style="italic">src/trust/</tspan></text>
+      <text class="d-label" x="509" y="180" text-anchor="middle" font-size="10.5">grounding + evals · tested (4/4) · mirrored ↑ into the Code node</text>
+      <line class="d-flow thin" x1="509" y1="138" x2="509" y2="104" stroke-dasharray="4 3" marker-end="url(#v0up)"/>
+    </svg>
+    <figcaption>Built &amp; green. n8n owns schedule + run-history (so always-on + observability come from the tool); the tested TS trust core holds the grounding gate + eval score and is mirrored verbatim into the n8n Code node. An ungrounded brief is held, not delivered.</figcaption>
+  </figure>
+
+  <h3>What's next to build</h3>
+  <ul>
+    <li>Author <code>v0-crawl/workflow/exec-brief.json</code> (the n8n export) + mirror the trust core into the Code node + an import/credentials guide.</li>
+    <li>A <b>real run</b> on real repo activity → capture <code>v0-crawl/evidence/</code> (the brief, eval score, token cost). Needs the n8n.cloud workspace + a read-only GitHub token + an Anthropic key.</li>
+  </ul>
+
+  <!-- ============================ v1-walk ============================ -->
+  <h2>v1-walk — the platform (design-only)</h2>
+  <h3>Design</h3>
+  <p>Crawl proves one workflow with n8n. Walk is where we <b>outgrow no-code</b>: a second and
+  third workflow shouldn't each re-solve auth, memory, and trust. The one-off becomes reusable
+  infrastructure so the next workflow costs days, not weeks — connectors as a library, shared
+  memory as a service, the trust core promoted to a called service, and a control plane that
+  spans every workflow.</p>
+
+  <h3>Tech stack (planned)</h3>
+  <table>
+    <tr><th>Layer</th><th>Choice</th></tr>
+    <tr><td>Connectors</td><td>TypeScript connector library, MCP-shaped, with a central OAuth / secret store (kills per-workflow manual auth)</td></tr>
+    <tr><td>Shared memory</td><td><b>Postgres + pgvector</b> — structured facts + semantic recall, dedup; same interface the crawl file-store implied</td></tr>
+    <tr><td>Orchestration</td><td>n8n for visual workflows + a TS service layer for queues, retries, per-run isolation</td></tr>
+    <tr><td>Trust</td><td>the v0 trust core promoted to one shared HTTP service every workflow calls</td></tr>
+    <tr><td>Control plane</td><td>a web UI (React/Next.js) — trigger, run history, and output across all workflows</td></tr>
+    <tr><td>Observability</td><td>OpenTelemetry + a dashboard; cost/quality SLOs per workflow</td></tr>
+    <tr><td>Model</td><td>provider-swappable interface (Claude default; Gemini/OpenAI)</td></tr>
+  </table>
+
+  <h3>Architecture</h3>
+  <figure>
+    <svg class="dgm" viewBox="0 0 880 430" role="img" aria-label="v1-walk: the platform (design-only)">
+      <defs><marker id="v1a" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path class="d-arrow" d="M0,0 L9,4.5 L0,9 Z"/></marker></defs>
+
+      <rect class="d-box ghost" x="20" y="40" width="686" height="44" rx="10"/>
+      <text class="d-title" x="363" y="60" text-anchor="middle" font-size="13">Control plane — for non-engineers</text>
+      <text class="d-label" x="363" y="76" text-anchor="middle" font-size="11">trigger · schedule · run history · output, across all workflows</text>
+
+      <rect class="d-box ghost" x="20" y="102" width="686" height="44" rx="10"/>
+      <text class="d-title" x="363" y="122" text-anchor="middle" font-size="13">Orchestrator — n8n + a TS service layer</text>
+      <text class="d-label" x="363" y="138" text-anchor="middle" font-size="11">queues · retries · per-run isolation</text>
+
+      <text class="d-eyebrow" x="20" y="166" font-size="10.5">AGENTS (WORKFLOWS)</text>
+      <g font-size="12">
+        <rect class="d-box ghost" x="20" y="172" width="162.5" height="52" rx="9"/><text class="d-title" x="101" y="202" text-anchor="middle">exec-brief</text>
+        <rect class="d-box ghost" x="194.5" y="172" width="162.5" height="52" rx="9"/><text class="d-title" x="275" y="202" text-anchor="middle">prospect intel</text>
+        <rect class="d-box ghost" x="369" y="172" width="162.5" height="52" rx="9"/><text class="d-title" x="450" y="202" text-anchor="middle">deal log</text>
+        <rect class="d-box ghost" x="543.5" y="172" width="162.5" height="52" rx="9"/><text class="d-title" x="624" y="202" text-anchor="middle">Q&amp;A</text>
+      </g>
+
+      <text class="d-eyebrow" x="20" y="244" font-size="10.5">SHARED PLATFORM SERVICES</text>
+      <g font-size="12">
+        <rect class="d-box ghost" x="20" y="250" width="162.5" height="54" rx="9"/><text class="d-title" x="101" y="273" text-anchor="middle">Connectors</text><text class="d-label" x="101" y="290" text-anchor="middle" font-size="10.5">central auth</text>
+        <rect class="d-box ghost" x="194.5" y="250" width="162.5" height="54" rx="9"/><text class="d-title" x="275" y="273" text-anchor="middle">Memory</text><text class="d-label" x="275" y="290" text-anchor="middle" font-size="10.5">Postgres + pgvector</text>
+        <rect class="d-box ghost" x="369" y="250" width="162.5" height="54" rx="9"/><text class="d-title" x="450" y="273" text-anchor="middle">Model</text><text class="d-label" x="450" y="290" text-anchor="middle" font-size="10.5">swappable</text>
+        <rect class="d-box ghost" x="543.5" y="250" width="162.5" height="54" rx="9"/><text class="d-title" x="624" y="273" text-anchor="middle">Trust</text><text class="d-label" x="624" y="290" text-anchor="middle" font-size="10.5">as a service</text>
+      </g>
+
+      <rect class="d-box ghost" x="726" y="40" width="134" height="264" rx="10"/>
+      <text class="d-title" x="793" y="66" text-anchor="middle" font-size="12.5">Observability</text>
+      <text class="d-label" x="793" y="92" text-anchor="middle" font-size="11">runs · cost</text>
+      <text class="d-label" x="793" y="112" text-anchor="middle" font-size="11">latency</text>
+      <text class="d-label" x="793" y="132" text-anchor="middle" font-size="11">eval score</text>
+      <text class="d-label" x="793" y="152" text-anchor="middle" font-size="11">+ SLOs</text>
+      <text class="d-label" x="793" y="184" text-anchor="middle" font-size="10.5" font-style="italic">cross-cuts</text>
+      <text class="d-label" x="793" y="200" text-anchor="middle" font-size="10.5" font-style="italic">every layer</text>
+
+      <text class="d-eyebrow" x="20" y="346" font-size="10.5">DATA SOURCES</text>
+      <g font-size="11">
+        <rect class="d-box ghost" x="20" y="354" width="113.1" height="38" rx="8"/><text class="d-title" x="76" y="378" text-anchor="middle">Slack</text>
+        <rect class="d-box ghost" x="141.1" y="354" width="113.1" height="38" rx="8"/><text class="d-title" x="197" y="378" text-anchor="middle">HubSpot</text>
+        <rect class="d-box ghost" x="262.3" y="354" width="113.1" height="38" rx="8"/><text class="d-title" x="318" y="378" text-anchor="middle">Notion</text>
+        <rect class="d-box ghost" x="383.4" y="354" width="113.1" height="38" rx="8"/><text class="d-title" x="440" y="378" text-anchor="middle">Drive</text>
+        <rect class="d-box ghost" x="504.5" y="354" width="113.1" height="38" rx="8"/><text class="d-title" x="561" y="378" text-anchor="middle">Calendar</text>
+        <rect class="d-box ghost" x="625.7" y="354" width="113.1" height="38" rx="8"/><text class="d-title" x="682" y="378" text-anchor="middle">GitHub</text>
+        <rect class="d-box ghost" x="746.8" y="354" width="113.1" height="38" rx="8"/><text class="d-title" x="803" y="378" text-anchor="middle">onchain</text>
+      </g>
+
+      <line class="d-flow thin" x1="363" y1="84" x2="363" y2="101" marker-end="url(#v1a)"/>
+      <line class="d-flow thin" x1="363" y1="146" x2="363" y2="171" marker-end="url(#v1a)"/>
+      <line class="d-flow thin" x1="363" y1="224" x2="363" y2="249" marker-end="url(#v1a)"/>
+      <line class="d-flow thin" x1="363" y1="304" x2="363" y2="353" marker-end="url(#v1a)"/>
+    </svg>
+    <figcaption>Design-only (dashed = planned). The same seams as crawl, promoted into shared services: one workflow becomes a platform where the 2nd and 3rd rent connectors, memory, and trust instead of rebuilding them.</figcaption>
+  </figure>
+
+  <h3>What's next to build</h3>
+  <ul>
+    <li>Design docs + diagrams in <code>v1-walk/</code>: the connector interface + central-auth model, the Postgres+pgvector memory schema, the trust-as-a-service contract, and the control-plane UX.</li>
+    <li>Sequence the onboarding — <b>prospect intel first</b> (highest survey demand; serves the under-served sales/BD half).</li>
+  </ul>
+
+  <!-- ============================ v2-run ============================ -->
+  <h2>v2-run — the vision (design-only)</h2>
+  <h3>Design</h3>
+  <p>Beacon as <em>how OP Labs runs AI work</em> — many workflows, many teams, safely. The
+  platform stops being engineer-gated: non-engineers compose workflows behind guardrails, and
+  the binding constraint shifts from "can we build it" to "who's allowed to and what did it
+  cost" — i.e. governance. This is also the bridge to case-study Option 2: agents that act with
+  value do so through policy-bounded, auditable onchain spend.</p>
+
+  <h3>Tech stack (vision)</h3>
+  <table>
+    <tr><th>Layer</th><th>Choice</th></tr>
+    <tr><td>Self-serve</td><td>a workflow builder — compose existing connectors + prompts behind guardrails</td></tr>
+    <tr><td>Governance</td><td>a policy engine — per-workflow budgets, access control, audit log, PII / data-residency</td></tr>
+    <tr><td>Reliability</td><td>SLOs, on-call, graceful degradation, multi-provider model routing (cost/quality)</td></tr>
+    <tr><td>Polyglot</td><td>Python (eval/ML-heavy agents), a Go hot path — behind the same tool/memory seams, no rewrite</td></tr>
+    <tr><td>Onchain seam</td><td><b>OP Stack</b> — smart accounts, session keys, spend policy, auditable settlement</td></tr>
+  </table>
+
+  <h3>Architecture</h3>
+  <figure>
+    <svg class="dgm" viewBox="0 0 880 300" role="img" aria-label="v2-run: governed platform plus onchain seam (design-only)">
+      <defs><marker id="v2a" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path class="d-arrow" d="M0,0 L9,4.5 L0,9 Z"/></marker></defs>
+
+      <text class="d-eyebrow" x="440" y="26" text-anchor="middle" font-size="11">GOVERNANCE WRAPS EVERYTHING — budgets · access · audit · PII / residency</text>
+      <rect class="d-box ghost" x="16" y="36" width="848" height="178" rx="12"/>
+
+      <rect class="d-box ghost" x="40" y="54" width="556" height="40" rx="9"/>
+      <text class="d-title" x="318" y="73" text-anchor="middle" font-size="12.5">Self-serve workflow builder</text>
+      <text class="d-label" x="318" y="88" text-anchor="middle" font-size="10.5">non-engineers compose connectors + prompts</text>
+
+      <rect class="d-box ghost" x="40" y="112" width="556" height="40" rx="9"/>
+      <text class="d-title" x="318" y="131" text-anchor="middle" font-size="12.5">Walk platform (v1)</text>
+      <text class="d-label" x="318" y="146" text-anchor="middle" font-size="10.5">connectors · memory · trust · orchestration</text>
+
+      <rect class="d-box ghost" x="40" y="170" width="556" height="34" rx="9"/>
+      <text class="d-title" x="318" y="192" text-anchor="middle" font-size="12">Multi-provider model routing — Claude · Gemini · cost/quality</text>
+
+      <rect class="d-box ghost" x="616" y="54" width="224" height="150" rx="9"/>
+      <text class="d-title" x="728" y="100" text-anchor="middle" font-size="12.5">Polyglot workers</text>
+      <text class="d-label" x="728" y="122" text-anchor="middle" font-size="10.5">Python (eval/ML)</text>
+      <text class="d-label" x="728" y="140" text-anchor="middle" font-size="10.5">Go (hot path)</text>
+      <text class="d-label" x="728" y="162" text-anchor="middle" font-size="10.5">behind the same seams</text>
+
+      <line class="d-flow thin" x1="318" y1="214" x2="318" y2="244" marker-end="url(#v2a)"/>
+      <rect class="d-box ghost" x="16" y="246" width="848" height="42" rx="10"/>
+      <text class="d-title" x="440" y="266" text-anchor="middle" font-size="12.5">Onchain seam · OP Stack — smart accounts · session keys · spend policy · auditable settlement</text>
+      <text class="d-red" x="440" y="282" text-anchor="middle" font-size="10.5">bridges to case-study Option 2</text>
+    </svg>
+    <figcaption>Design-only. Governance wraps the platform so AI work scales org-wide and safely; the onchain seam extends the same trust machinery (policy-bounded, auditable) from words to money — the bridge to Option 2.</figcaption>
+  </figure>
+
+  <h3>What's next to build</h3>
+  <ul>
+    <li>Design docs + diagrams in <code>v2-run/</code>: the governance/policy model and the onchain spend-policy design (smart accounts + session keys on the OP Stack).</li>
+  </ul>
+
+  <!-- ============================ overall ============================ -->
+  <h2>What's next, overall</h2>
+  <div class="note red"><span class="k">Immediate</span>Finish <code>v0-crawl</code> end-to-end:
+  author the n8n workflow, mirror the trust core into its Code node, then do a <b>real run</b>
+  on real GitHub activity and capture the evidence. That's the slice that "has to run." v1 and
+  v2 then deepen as committed design docs in their dirs.</div>
+  <p>The general system seams live on the <a href="architecture.html">Architecture</a> page; the
+  stage signals + metrics on the <a href="crawl-walk-run.html">Roadmap</a>. This page is the
+  concrete, per-version view of how it actually gets built.</p>
+
+  <div class="next">
+    <a href="crawl-walk-run.html"><div class="k">← Back</div><div class="v">Roadmap</div></a>
+    <a href="index.html"><div class="k">Start over →</div><div class="v">Overview</div></a>
+  </div>
+</main>
+
+<footer class="site-foot"><div class="foot-in">
+  <span class="foot-brand">Beacon</span>
+  <span>A case study for <a href="https://www.oplabs.co/" target="_blank" rel="noopener">OP Labs</a> · Option 1</span>
+  <span class="foot-tag">“Scale Ethereum, Build Optimism”</span>
+</div></footer>
+</body>
+</html>
