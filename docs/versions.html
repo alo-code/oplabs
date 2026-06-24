@@ -34,6 +34,45 @@
     <tr><td><code>v2-run</code></td><td>The vision</td><td>Design-only</td><td>Self-serve + governance + multi-provider + onchain seam</td></tr>
   </table>
 
+  <h2>How to read the three versions — what actually changes</h2>
+  <p>They aren't "small / medium / large." Each <b>answers a different question</b> and
+  <b>removes a different bottleneck</b> — and you only earn the next one with a real-world
+  <em>signal</em>, not a date.</p>
+  <div class="grid-3">
+    <div class="card"><b>V0 · crawl</b><br>“Can we trust <em>one</em> workflow enough to act on it?”<br><span style="color:var(--muted)">Bottleneck removed: the laptop + blind trust.</span></div>
+    <div class="card"><b>V1 · walk</b><br>“Can we make the <em>next</em> workflow cheap?”<br><span style="color:var(--muted)">Bottleneck removed: engineering capacity.</span></div>
+    <div class="card"><b>V2 · run</b><br>“Can the <em>org</em> run AI work safely without engineers in the loop?”<br><span style="color:var(--muted)">Bottleneck removed: governance.</span></div>
+  </div>
+  <p>The bottleneck <em>moves</em> — laptop/trust → engineering-capacity → governance. That arc is the plan.</p>
+
+  <table>
+    <tr><th></th><th>V0 — crawl</th><th>V1 — walk</th><th>V2 — run</th></tr>
+    <tr><td>Job</td><td>Trust on one workflow</td><td>Leverage across workflows</td><td>Safe scale across the org</td></tr>
+    <tr><td>Scope</td><td>1 workflow (the brief)</td><td>2–3 workflows</td><td>many workflows, many teams</td></tr>
+    <tr><td>Who consumes</td><td>eng leadership + BD</td><td>a few teams</td><td>all ~75, incl. non-engineers</td></tr>
+    <tr><td>Who builds</td><td>1 engineer wires n8n</td><td>engineers build shared services</td><td>non-engineers self-serve; eng owns guardrails</td></tr>
+    <tr><td>Orchestration</td><td>n8n.cloud (no-code)</td><td>n8n + a TS service layer</td><td>+ policy engine, multi-provider routing</td></tr>
+    <tr><td>Memory</td><td>none (stateless per run)</td><td>Postgres + pgvector (shared)</td><td>governed, multi-tenant</td></tr>
+    <tr><td>Auth</td><td>per-workflow n8n creds</td><td>central OAuth / secret store</td><td>access-controlled + audited</td></tr>
+    <tr><td>State today</td><td><b>runs</b></td><td>design-only</td><td>design-only</td></tr>
+  </table>
+
+  <h3>The through-line: trust is the constant</h3>
+  <p>The <b>trust core</b> (grounding + the eval gate) is the spine that survives all three stages —
+  it just graduates form: a <b>Code node</b> in V0 → a <b>shared service</b> in V1 → a
+  <b>governed, audited</b> service (extended to onchain <em>spend</em> policy) in V2. Get the trust
+  machinery right once, on one workflow, then carry it everywhere.</p>
+
+  <div class="note"><span class="k">The value in one line</span>Adding the 2nd workflow (say prospect
+  intel): <b>impossible in V0</b> (one hardcoded workflow) → <b>days in V1</b> (reuse connectors +
+  memory + trust) → <b>hours in V2</b>, by a non-engineer. Weeks → days → hours.</div>
+
+  <p class="note red"><span class="k">Honest nuance</span>Crawl doesn't fix all six pains — and that's
+  deliberate. V0 fixes laptop-sleep, observability, non-engineer-readability, and grounding/trust (via
+  n8n + the gate). The re-fetch / shared-memory and central-auth pains are <em>platform-grade</em> —
+  they're V1. The governance layer is V2. The <a href="crawl-walk-run.html">Roadmap</a> has the
+  <b>signals</b> that gate each move.</p>
+
   <!-- ============================ v0-crawl ============================ -->
   <h2>v0-crawl — the runnable version</h2>
   <h3>Design</h3>
