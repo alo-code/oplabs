@@ -43,6 +43,12 @@
   history), and hand-to-a-non-engineer (a visual workflow they can read, trigger, edit). The
   only thing kept as real, tested code is the trust core, because grounded + measured output
   is the differentiator.</p>
+  <p>It serves <b>both halves of the org from one grounded brief</b>: a technical digest for
+  engineering leadership, and a plain-language <em>“what shipped, and why it matters to
+  customers”</em> brief for BD/GTM. Both render from the same trust-gated source — so the
+  eng-derived claims BD repeats are <b>safe</b> (every line cites a real PR), and the “why it
+  matters” lines live <em>inside</em> the grounded brief, eval-checked against speculative
+  impact. The trust gate runs once; only render + deliver fan out.</p>
 
   <h3>Tech stack</h3>
   <table>
@@ -51,7 +57,7 @@
     <tr><td>Data in</td><td><b>GitHub REST API</b> via an n8n HTTP Request node (commits + merged PRs in the window)</td></tr>
     <tr><td>Summarization</td><td><b>Anthropic Claude API</b> via an n8n HTTP Request node</td></tr>
     <tr><td>Trust core</td><td><b>TypeScript</b> — <code>zod</code> at the parse boundary, pure grounding + eval functions, <code>vitest</code> (4/4 green)</td></tr>
-    <tr><td>Render · delivery</td><td>HTML / markdown → Slack / email (n8n nodes)</td></tr>
+    <tr><td>Render · delivery</td><td>two renders from one grounded brief: eng digest + BD brief → two Slack channels (n8n nodes)</td></tr>
     <tr><td>Docs · hosting</td><td>Static HTML → <b>GitHub Pages</b> (oplabs.daciasec.net)</td></tr>
   </table>
 
@@ -78,7 +84,7 @@
         <text class="d-label" x="509" y="88" text-anchor="middle" font-size="10.5">Code node · gate</text>
         <rect class="d-box" x="588" y="44" width="129" height="58" rx="9"/>
         <text class="d-title" x="652" y="70" text-anchor="middle">Render</text>
-        <text class="d-label" x="652" y="88" text-anchor="middle" font-size="10.5">HTML / MD</text>
+        <text class="d-label" x="652" y="88" text-anchor="middle" font-size="10.5">eng + BD</text>
         <rect class="d-box" x="731" y="44" width="129" height="58" rx="9"/>
         <text class="d-title" x="795" y="70" text-anchor="middle">Deliver</text>
         <text class="d-label" x="795" y="88" text-anchor="middle" font-size="10.5">Slack · email</text>
@@ -94,7 +100,7 @@
       <text class="d-label" x="509" y="180" text-anchor="middle" font-size="10.5">grounding + evals · tested (4/4) · mirrored ↑ into the Code node</text>
       <line class="d-flow thin" x1="509" y1="138" x2="509" y2="104" stroke-dasharray="4 3" marker-end="url(#v0up)"/>
     </svg>
-    <figcaption>Built &amp; green. n8n owns schedule + run-history (so always-on + observability come from the tool); the tested TS trust core holds the grounding gate + eval score and is mirrored verbatim into the n8n Code node. An ungrounded brief is held, not delivered.</figcaption>
+    <figcaption>Built &amp; green. n8n owns schedule + run-history (so always-on + observability come from the tool); the tested TS trust core holds the grounding gate + eval score and is mirrored verbatim into the n8n Code node. An ungrounded brief is held, not delivered. Render then fans out two framings from this one grounded brief — a technical digest for eng leadership and a "what to tell customers" brief for BD/GTM, each citing the same PRs.</figcaption>
   </figure>
 
   <h3>What's next to build</h3>

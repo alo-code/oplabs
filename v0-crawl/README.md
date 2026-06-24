@@ -11,7 +11,7 @@ The weekly **exec brief**, built as an **n8n.cloud workflow** with a small,
 ```
 n8n.cloud:  Schedule(cron) → HTTP→GitHub (commits + merged PRs)
             → HTTP→Claude (grounded summary) → Code node [trust]
-            → render (HTML/markdown) → Slack/email      (run history = telemetry)
+            → two renders: eng + BD → Slack/email      (run history = telemetry)
                                     │
 src/trust/  ◄── source of truth, mirrored into the Code node ──┘
 ```
@@ -21,6 +21,12 @@ always-on (its scheduler, not a laptop), observability (its run history), and
 hand-to-a-non-engineer (a visual workflow they can read, trigger, and edit). The
 one thing kept as real, **tested** code is the trust core, because grounded +
 measured output is the whole point of the proposal.
+
+The brief serves **both halves of the org from one grounded source**: it renders two ways —
+an eng-leadership technical digest and a BD/GTM "what shipped, and why it matters to customers"
+brief. The trust gate runs once on the shared brief; only render + deliver fan out. The BD
+"why it matters" lines live inside the grounded brief (citing the same PRs) and are
+eval-checked against speculative impact, so eng-derived claims are safe for BD to repeat.
 
 ## Layout
 

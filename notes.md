@@ -147,3 +147,18 @@ npm test
 - npm install hit a sandbox limit (esbuild postinstall can't spawn sh) but vitest ran
   and tests passed — clean install on a normal machine.
 - Next: the n8n workflow (workflow/exec-brief.json) + a real run for evidence/.
+
+## 2026-06-24 — v0 design: one brief, two framings
+
+- Q (from review): v0 only fetches GitHub — is it an exec summary for BD on what the
+  devs are up to?
+- Decision: v0 brief = ONE grounded brief, rendered TWO ways — an eng-leadership technical
+  digest AND a BD/GTM "what shipped + why it matters to customers" brief. Bridges the two
+  halves of the org (~half eng / half BD); serves the under-served BD side even in crawl;
+  stays GitHub-grounded.
+- Architecture impact: the trust core (grounding + eval) is UNCHANGED — it gates the single
+  grounded brief; render/deliver fan out downstream. Two audiences, one gate.
+- Safety: the BD "why it matters" lines live INSIDE the grounded brief (cite the same PRs);
+  the eval flags speculative impact (no "40% faster" unless it's in the cited artifact).
+  That's what makes eng-derived claims safe for BD to repeat — the trust core earning its keep.
+- GitHub-only stays a crawl constraint; a 2nd source (HubSpot / deal context) is walk.
