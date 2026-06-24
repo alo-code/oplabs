@@ -19,8 +19,8 @@ Beacon is the always-on platform that fixes that. The full argument lives in
 the case study.
 
 This repo is **three segregated versions** of that platform, one per crawl-walk-run
-stage: `crawl/` (the only one that runs — the exec brief as an **n8n.cloud workflow**
-plus a tested TS **trust core**), and `walk/` + `run/` (design-only, code-ready for
+stage: `v0-crawl/` (the only one that runs — the exec brief as an **n8n.cloud workflow**
+plus a tested TS **trust core**), and `v1-walk/` + `v2-run/` (design-only, code-ready for
 later). Shared methodology (`skills/`, `todo/`, `CADENCE.md`, `notes.md`) and the
 approach doc (`docs/`) live at the root.
 
@@ -49,13 +49,13 @@ todo/                 workplans = ongoing/planned work (committed)
 docs/                 the approach doc — navigable HTML + diagrams → GitHub Pages
                       (oplabs.daciasec.net); shared narrative across all versions
 
-crawl/                THE runnable version — n8n workflow + a tested TS trust core
+v0-crawl/                THE runnable version — n8n workflow + a tested TS trust core
   workflow/           n8n.cloud export: schedule → GitHub → Claude → render
   src/trust/          grounding + eval scoring (tested TS; mirrored into an n8n Code node)
   test/               vitest specs for the trust core
   evidence/           proof on real data (a real exec-brief run)
-walk/                 design-only (code later): the platform — connectors, memory, control plane
-run/                  design-only (code later): the vision — self-serve, governance, polyglot, onchain
+v1-walk/                 design-only (code later): the platform — connectors, memory, control plane
+v2-run/                  design-only (code later): the vision — self-serve, governance, polyglot, onchain
 ```
 
 ## Conventions
@@ -84,8 +84,8 @@ an afterthought; do not tidy it.
 ## Quickstart
 
 ```bash
-cd crawl
+cd v0-crawl
 npm install
 npm test            # the TS trust core (grounding + evals)
 ```
-The full exec-brief runs as an n8n.cloud workflow — see `crawl/README.md`.
+The full exec-brief runs as an n8n.cloud workflow — see `v0-crawl/README.md`.

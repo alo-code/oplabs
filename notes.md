@@ -132,3 +132,18 @@ npm test
 - Removed every `<span class="mark">` dot (nav + footer + OP chip); `.brand` /
   `.foot-brand` now italic; nav active state is mono. All CSS, still offline/no-JS.
 - Synced `skills/docs-site.md` (brand rule + scaffold) — it had stale "Inter" + "red mark".
+
+## 2026-06-24 — restructure to 3 versions + crawl trust core
+
+- Promoted beacon/* to repo root; created crawl/walk/run; git init; pushed to
+  github.com/alo-code/oplabs. Enabled Pages (main /docs, CNAME oplabs.daciasec.net).
+- User then renamed the dirs: crawl→v0-crawl, walk→v1-walk, run→v2-run. Adopted it;
+  aligned every path ref in README / CLAUDE.md / version READMEs.
+- Built the crawl trust core (TDD): src/trust/{schema,grounding,evals}.ts + tests.
+  grounding = hard gate (every bullet must cite a real SHA/PR; short-SHA prefix match);
+  evals = weighted score that HARD-FAILS any ungrounded brief regardless of score.
+  typecheck clean, 4/4 vitest green. Pure functions (no runtime deps) so they mirror
+  verbatim into the n8n Code node; zod only at the parse boundary.
+- npm install hit a sandbox limit (esbuild postinstall can't spawn sh) but vitest ran
+  and tests passed — clean install on a normal machine.
+- Next: the n8n workflow (workflow/exec-brief.json) + a real run for evidence/.

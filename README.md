@@ -22,25 +22,25 @@ stakeholders, and the crawl-walk-run plan — with diagrams, all cross-linked.
 
 ## Three versions, segregated to show the thinking
 
-The crawl → walk → run plan isn't just described — it's **three directories**, so you
-can see the line of thinking as the system matures:
+The crawl → walk → run plan isn't just described — it's **three directories** (`v0` →
+`v1` → `v2`), so you can see the line of thinking as the system matures:
 
 | Dir | Stage | State | What's in it |
 |---|---|---|---|
-| **`crawl/`** | MVP — one workflow, trusted | **Runs today** | The weekly exec brief: an **n8n.cloud workflow** + a **tested TS trust core** (real GitHub + Claude calls, not mocked) |
-| **`walk/`** | The platform | Design-only (code later) | Connector library, shared memory, control plane — where we outgrow no-code |
-| **`run/`** | The vision | Design-only (code later) | Self-serve, governance, reliability, polyglot, onchain seam |
+| **`v0-crawl/`** | MVP — one workflow, trusted | **Runs today** | The weekly exec brief: an **n8n.cloud workflow** + a **tested TS trust core** (real GitHub + Claude calls, not mocked) |
+| **`v1-walk/`** | The platform | Design-only (code later) | Connector library, shared memory, control plane — where we outgrow no-code |
+| **`v2-run/`** | The vision | Design-only (code later) | Self-serve, governance, reliability, polyglot, onchain seam |
 
-Each version is its own self-contained project; `walk/` and `run/` are scaffolded
+Each version is its own self-contained project; `v1-walk/` and `v2-run/` are scaffolded
 **code-ready** for when they're built.
 
-## Run the working slice (`crawl/`)
+## Run the working slice (`v0-crawl/`)
 
 ```bash
-cd crawl && npm install && npm test     # the TS trust core (grounding + evals) — no keys needed
+cd v0-crawl && npm install && npm test     # the TS trust core (grounding + evals) — no keys needed
 ```
-Then import `crawl/workflow/exec-brief.json` into n8n.cloud, add the GitHub + Anthropic
-credentials, and Run-now. Details in **`crawl/README.md`**.
+Then import `v0-crawl/workflow/exec-brief.json` into n8n.cloud, add the GitHub + Anthropic
+credentials, and Run-now. Details in **`v0-crawl/README.md`**.
 
 > Why n8n: it removes three of the six pains by construction — always-on (its
 > scheduler), observability (run history), and non-engineer-usable (a visual workflow).
@@ -51,8 +51,9 @@ credentials, and Run-now. Details in **`crawl/README.md`**.
 
 ```
 docs/        approach doc — navigable HTML + diagrams → GitHub Pages (oplabs.daciasec.net)
-crawl/       the runnable version (n8n workflow + tested TS trust core)
-walk/  run/  design-only versions, code-ready for later
+v0-crawl/    the runnable version (n8n workflow + tested TS trust core)
+v1-walk/     design-only — the platform (connectors, memory, control plane), code-ready
+v2-run/      design-only — the vision (self-serve, governance, polyglot, onchain), code-ready
 skills/      AI-driven-development playbooks (shared across versions)
 todo/        workplans — planned/ongoing work (committed; the plan is part of the deliverable)
 notes.md     raw running log of how this was built with AI (a deliverable; not cleaned up)
