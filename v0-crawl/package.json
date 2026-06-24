@@ -1,0 +1,21 @@
+{
+  "name": "oplabs-crawl",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Beacon crawl — the exec-brief trust core (grounding + evals), mirrored into the n8n workflow. OP Labs case study, Option 1.",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "typescript": "^5.6.2",
+    "vitest": "^2.1.1"
+  }
+}
