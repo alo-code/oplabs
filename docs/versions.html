@@ -76,22 +76,15 @@
   <!-- ============================ v0-crawl ============================ -->
   <h2>v0-crawl — the runnable version</h2>
   <h3>Design</h3>
-  <p>The weekly <b>exec brief</b> as an <b>n8n.cloud workflow</b> with a small, <b>tested
-  TypeScript trust core</b>. Picking n8n is the design: it removes three of the six pains
-  <em>by construction</em> — always-on (its scheduler, not a laptop), observability (its run
-  history), and hand-to-a-non-engineer (a visual workflow they can read, trigger, edit). The
-  only thing kept as real, tested code is the trust core, because grounded + measured output
-  is the differentiator.</p>
-  <p>It serves <b>both halves of the org from one grounded brief</b>: a technical digest for
-  engineering leadership, and a plain-language <em>“what shipped, and why it matters to
-  customers”</em> brief for BD/GTM. Both render from the same trust-gated source — so the
-  eng-derived claims BD repeats are <b>safe</b> (every line cites a real PR), and the “why it
-  matters” lines live <em>inside</em> the grounded brief, eval-checked against speculative
-  impact. The trust gate runs once; only render + deliver fan out.</p>
-  <p>Crawl pulls a small, high-signal set — GitHub, Monday, Notion, a curated Slack channel,
-  and a Drive folder — all feeding that one grounded brief. Each source is just an n8n node,
-  and the trust gate checks every claim against whatever was fetched, so more sources make the
-  update <em>fuller</em>, not riskier (the trust core is source-agnostic — it keys off id + URL).</p>
+  <p>The weekly <b>exec brief</b> as an <b>n8n.cloud workflow</b> + a small, <b>tested
+  TypeScript trust core</b>. n8n <em>is</em> the design — it removes three pains for free:
+  always-on, observability (run history), and non-engineer-readable (a visual workflow). The
+  trust core is the only real code, because grounded, measured output is the differentiator.</p>
+  <p>It pulls a high-signal set — GitHub plus Monday, Notion, one Slack channel, one Drive
+  folder, each just an n8n node — into <b>one grounded brief</b>, then renders <b>two framings</b>:
+  a technical digest for eng leadership and a plain-language “why it matters to customers” brief
+  for BD. Both cite the same PRs, so what BD repeats is safe. The gate runs once; only render and
+  deliver fan out.</p>
 
   <h3>Tech stack</h3>
   <table>
@@ -143,7 +136,7 @@
       <text class="d-label" x="509" y="180" text-anchor="middle" font-size="10.5">grounding + evals · tested (4/4) · mirrored ↑ into the Code node</text>
       <line class="d-flow thin" x1="509" y1="138" x2="509" y2="104" stroke-dasharray="4 3" marker-end="url(#v0up)"/>
     </svg>
-    <figcaption>Built &amp; green. n8n owns schedule + run-history (so always-on + observability come from the tool); the tested TS trust core holds the grounding gate + eval score and is mirrored verbatim into the n8n Code node. An ungrounded brief is held, not delivered. Render then fans out two framings from this one grounded brief — a technical digest for eng leadership and a "what to tell customers" brief for BD/GTM, each citing the same PRs.</figcaption>
+    <figcaption>Built &amp; green. n8n owns schedule + run-history; the tested TS trust core holds the grounding gate (mirrored into the Code node) — an ungrounded brief is held, not delivered. Render then fans out two framings, eng + BD, from the one grounded brief.</figcaption>
   </figure>
 
   <h3>What's next to build</h3>
@@ -155,11 +148,10 @@
   <!-- ============================ v1-walk ============================ -->
   <h2>v1-walk — the platform (design-only)</h2>
   <h3>Design</h3>
-  <p>Crawl proves one workflow with n8n. Walk is where we <b>outgrow no-code</b>: a second and
-  third workflow shouldn't each re-solve auth, memory, and trust. The one-off becomes reusable
-  infrastructure so the next workflow costs days, not weeks — connectors as a library, shared
-  memory as a service, the trust core promoted to a called service, and a control plane that
-  spans every workflow.</p>
+  <p>Crawl proves one workflow with n8n. Walk is where we <b>outgrow no-code</b>: the 2nd and
+  3rd workflow shouldn't each re-solve auth, memory, and trust. The one-off becomes reusable
+  infrastructure — a connector library, shared memory, the trust core as a service, a control
+  plane — so the next workflow costs days, not weeks.</p>
 
   <h3>Tech stack (planned)</h3>
   <table>

@@ -73,12 +73,11 @@
   <p>See the full mapping of each pain to its fix on the <a href="problem-map.html">Problem map</a>.</p>
 
   <h2>The proposed solution</h2>
-  <p><b>Beacon</b> is a thin, always-on platform that sits over OP Labs' existing data
-  sources and runs the AI workflows as managed services — with <b>shared memory</b>,
-  <b>centralized auth</b>, <b>built-in observability</b>, and a <b>control plane a
-  non-engineer can use</b>. Crucially, trust is a feature: every output is
-  <b>grounded</b> in a real source and every run is <b>measured</b> (cost, latency,
-  quality), so the org can believe what comes out. Architecture detail is on the
+  <p><b>Beacon</b> is a thin, always-on platform over OP Labs' existing data sources that
+  runs the AI workflows as managed services — with <b>shared memory</b>, <b>centralized
+  auth</b>, <b>built-in observability</b>, and a <b>control plane a non-engineer can use</b>.
+  Trust is a feature: every output is <b>grounded</b> in a real source and every run is
+  <b>measured</b>, so the org can believe what comes out. Detail on the
   <a href="architecture.html">Architecture</a> page.</p>
 
   <h3>Why this, over the alternatives</h3>
@@ -102,14 +101,12 @@
     <div class="card"><b>Leadership / Exec</b> — read the brief, own buy-in + budget. <span style="color:var(--muted)">Trust = on time, grounded enough to defend a decision.</span></div>
     <div class="card"><b>Security / Legal / Compliance</b> — privacy, secrets, audit. <span style="color:var(--muted)">Bring them in at crawl; they gate the self-serve (Run) stage.</span></div>
   </div>
-  <p><b>Method — gather, then keep gathering.</b> Rather than guess, I'd send a short,
-  two-track survey (Slack workflow / Google Form — consumers vs. builders) to all 75 and
-  score the workflows by <code>reach × frequency × pain ÷ effort</code> so the roadmap is
-  pull-driven, not one person's hunch. The same 3-question pulse re-runs at each stage gate
-  — that's how requirements keep <em>shaping and evolving</em> the plan (and it doubles as
-  an adoption metric). The instrument decides build order; the trust-risk filter decides
-  what's safe to ship <em>first</em> — which is why crawl is the exec brief even though raw
-  demand ranks prospect intel higher.</p>
+  <p><b>Method — gather, then keep gathering.</b> Rather than guess, I'd survey all 75 (two
+  tracks: consumers vs. builders) and score workflows by <code>reach × frequency × pain ÷
+  effort</code>, so the roadmap is pull-driven. A short pulse re-runs at each stage gate —
+  requirements keep <em>shaping</em> the plan, and it doubles as an adoption metric. Demand
+  sets build order; a trust-risk filter sets what ships <em>first</em> — which is why crawl is
+  the exec brief, even though raw demand ranks prospect intel higher.</p>
 
   <h2>The plan, in one line</h2>
   <p><b>Crawl:</b> make one workflow (the weekly exec brief) always-on, grounded, and
@@ -119,14 +116,12 @@
   <a href="crawl-walk-run.html">Roadmap</a>.</p>
 
   <h2 id="language">A note on language (TypeScript)</h2>
-  <p>The JD lists Python and Go; this prototype is TypeScript — a deliberate call.
-  The case study grades judgment and AI orchestration, and "it has to run," so the
-  strongest language gives the cleanest working slice. The agent/MCP/onchain tooling
-  (Vercel AI SDK, MCP TypeScript SDK, <code>viem</code>) is first-class in TS, and
-  end-to-end type safety across connectors → memory → agent → UI removes a whole bug
-  class — which matters when handing to a non-engineer. The <b>production vision stays
-  polyglot</b> (Python for eval/ML-heavy agents, a Go hot path where a connector needs
-  it) behind language-agnostic seams: typed tool schemas, a message bus, HTTP.</p>
+  <p>The JD lists Python and Go; this prototype is TypeScript — a deliberate call. The grade
+  is judgment and orchestration, and "it has to run," so my strongest language gives the
+  cleanest slice. The agent/MCP/onchain tooling (Vercel AI SDK, MCP TS SDK, <code>viem</code>)
+  is first-class in TS, and end-to-end type safety removes a bug class — which matters when
+  handing to a non-engineer. The <b>production vision stays polyglot</b> (Python for eval/ML
+  agents, a Go hot path where needed) behind language-agnostic seams: tool schemas, a bus, HTTP.</p>
 
   <div class="next">
     <a href="problem-map.html"><div class="k">Next →</div><div class="v">Problem map</div></a>

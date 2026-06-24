@@ -73,17 +73,17 @@
   <div class="stage stage-crawl" style="margin-top:18px">
     <span class="badge">CRAWL</span>
     <h3>One workflow, end to end, trustworthy</h3>
-    <p><b>Goal:</b> replace the laptop-bound weekly exec brief with an always-on version
-    that pulls real data, grounds every claim, costs a known amount, and a non-engineer can
-    trigger and read. <b>Scope:</b> <code>todo/exec-brief-slice.md</code> — one agent, one
-    real connector (GitHub), shared memory, telemetry, a schedule, a readable render.</p>
-    <p><b>What "earns trust" means:</b> for ~3–4 weeks the brief runs on schedule with
-    <b>zero silent failures</b>, every figure traces to a source, and a non-engineer reads it
-    without an engineer in the loop.</p>
-    <div class="signal"><b>Signals it's time to move to Walk:</b> a second team asks "can it do
-    <em>our</em> thing too?" (pull, not push) · we're copy-pasting connector/memory/telemetry
-    code to fake a second workflow · the brief is trusted enough that someone is <em>upset when
-    it's late</em>.</div>
+    <p><b>Goal:</b> make the weekly exec brief always-on, grounded, and cheap to run — and
+    readable by a non-engineer. <b>Scope:</b> one agent, one real connector (GitHub), shared
+    memory, telemetry, a schedule, a readable render.</p>
+    <p><b>Earns trust when:</b> for ~3–4 weeks it runs on schedule with <b>zero silent
+    failures</b>, every figure traces to a source, and a non-engineer reads it unaided.</p>
+    <div class="signal"><b>Move to Walk when:</b>
+      <ul>
+        <li>a 2nd team asks "can it do <em>our</em> thing?" (pull, not push)</li>
+        <li>you're copy-pasting connector/memory code to fake a 2nd workflow</li>
+        <li>someone's <em>upset when the brief is late</em> — trust, earned</li>
+      </ul></div>
   </div>
 
   <!-- WALK -->
@@ -100,10 +100,12 @@
       <li><b>Control plane v1</b>: a non-engineer can trigger, schedule, and read any workflow's output and run history from a web UI.</li>
       <li><b>Onboard the existing workflows</b> — <b>prospect intel first</b> (the survey ranks it highest-demand and it serves the under-served sales/BD half), then deal decision-log and Q&amp;A.</li>
     </ul>
-    <div class="signal"><b>Signals it's time to move to Run:</b> non-engineers are self-serving
-    existing workflows without filing a ticket · the bottleneck shifts from "can we build it" to
-    "who's allowed to and what did it cost" (governance, not engineering) · several teams depend
-    on it daily and an outage would actually hurt.</div>
+    <div class="signal"><b>Move to Run when:</b>
+      <ul>
+        <li>non-engineers self-serve workflows without filing a ticket</li>
+        <li>the bottleneck is governance, not engineering ("who's allowed, what did it cost")</li>
+        <li>several teams depend on it daily — an outage would hurt</li>
+      </ul></div>
   </div>
 
   <!-- RUN -->
@@ -119,10 +121,12 @@
       <li><b>Polyglot where it pays</b>: Python agents for eval/ML-heavy work, a Go hot path for high-throughput connectors — behind the same seams, no rewrite.</li>
       <li><b>Onchain seam</b> (bridge toward Option 2): agents that act with value do so through policy-bounded, auditable spend — the same trust machinery, extended to money.</li>
     </ul>
-    <div class="signal"><b>Signals we're succeeding at Run:</b> time-to-new-workflow measured in
-    hours · measurable org impact (hours saved/week, analyst time redeployed, cost/workflow
-    trending down) · AI work is <em>boringly reliable</em> — the interesting conversations are
-    about what to automate next, not whether the laptop is awake.</div>
+    <div class="signal"><b>Succeeding at Run when:</b>
+      <ul>
+        <li>a new workflow takes hours</li>
+        <li>measurable org impact — hours saved/week, cost/workflow trending down</li>
+        <li>AI work is <em>boringly reliable</em>; the question is what to automate next</li>
+      </ul></div>
   </div>
 
   <h2>Metrics that travel across all three stages</h2>
