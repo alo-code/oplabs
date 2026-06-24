@@ -1,0 +1,7 @@
+---
+description: Beacon — agent operating guide
+alwaysApply: true
+---
+
+Read **AGENTS.md** at the repo root — it's the single source of truth for how work ships here
+(the five-stage cadence, the repo map, the conventions). Then read `CADENCE.md`.

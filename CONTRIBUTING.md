@@ -3,6 +3,9 @@
 Beacon is built so the *method* is explicit — so a new teammate (or an AI agent) can
 contribute without one person in the loop. That's the whole point of the project; here's the path.
 
+> **Whatever agent you use** — Claude Code, Codex, Cursor, Copilot, Gemini — loads the same guide:
+> each tool's config file is a thin pointer to **[`AGENTS.md`](AGENTS.md)**, the single source of truth.
+
 ## Orient (5 min)
 1. **`README.md`** — what this is + the three-version layout (`v0-crawl` / `v1-walk` / `v2-run`).
 2. **`docs/index.html`** (or https://oplabs.daciasec.net) — the approach + crawl-walk-run plan.

@@ -232,3 +232,14 @@ npm test
 - **CI:** .github/workflows/ci.yml runs typecheck + tests on push/PR; README badge added.
 - **ROI + ADRs:** ROI.md (~40× buy-in math) + adr/0001 (n8n-vs-custom) + adr/0002 (TS); README links them.
 - The real n8n run is still the only thing needing the user's n8n.cloud.
+
+## 2026-06-24 — made the repo agent-agnostic
+
+- Q: is this repo agent-agnostic (Codex vs Claude vs ...)? Investigated: content was portable
+  (skills/, CADENCE, CONTRIBUTING are plain md) but only Claude Code auto-loaded CLAUDE.md — and
+  CLAUDE.md *falsely* claimed Cursor/Codex auto-load it.
+- Fix: **AGENTS.md** is now the canonical guide (the cross-tool standard). CLAUDE.md, GEMINI.md,
+  .cursor/rules/beacon.mdc, and .github/copilot-instructions.md are thin pointers to it — DRY, no
+  duplicated content to drift; each tool auto-loads its pointer → same guidance everywhere.
+- Corrected stale conventions while porting (secrets live in n8n credentials, not a
+  src/core/config.ts that never existed after the n8n pivot).
