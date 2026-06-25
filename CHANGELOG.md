@@ -24,6 +24,10 @@ to this file (under `## [Unreleased]`) plus an `evidence/<workplan>/` dir.
 - **Control plane: one "Create Report" button** → fetch every healthy source → live activity feed →
   a **grounded executive summary** (`src/agents/exec-summary/`); Claude narrative when keyed, grounded
   + deterministic otherwise.
+- **Trust gate + connector resilience**: the exec summary is now **eval-gated** (v0's grounding/evals
+  ported to `src/trust/gate.ts`) — an ungrounded / fabricated-figure / secret-leaking brief is **held,
+  not published** (`npm run trust`; shown on the page). Every connector gets **bounded retry +
+  rate-limit** (`src/connectors/resilience.ts`; transient vs terminal via `HttpError`).
 - **Local onboarding + authentication**: `docs/onboarding.html` (Quickstart, in the nav); **"Connect a
   service"** in the app and a **`./beacon setup`** CLI wizard over one shared catalog
   (`src/core/services.ts`) — tokens to a gitignored `.env`, live-applied; the server binds localhost

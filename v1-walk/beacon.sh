@@ -89,6 +89,7 @@ case "${1:-}" in
   status)  status ;;
   demo)    demo ;;
   scenario) ensure_deps; npm run scenario ;;
+  trust)   ensure_deps; npm run trust ;;
   setup)   ensure_deps; npm run setup ;;
   test)    ensure_deps; npm test ;;
   logs)    tail -f "$LOG_FILE" ;;

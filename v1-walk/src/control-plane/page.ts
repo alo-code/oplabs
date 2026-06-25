@@ -66,6 +66,9 @@ export const PAGE = `<!doctype html>
   .rbt { flex:1; } .rb .ext { color:var(--faint); }
   .rmore { color:var(--faint); font-size:12.5px; padding:4px 0 0 2px; }
   .rfoot { padding:11px 18px; color:var(--faint); font-size:12px; background:#fcfcfd; }
+  .report.held { border-color:#f3c6cb; }
+  .report.held .rtitle { color:var(--red); }
+  .vlist { margin:8px 0 0 18px; padding:0; } .vlist li { margin:2px 0; }
 
   /* connectors (health only — no per-source buttons) */
   .conns { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; }
@@ -258,6 +261,16 @@ export const PAGE = `<!doctype html>
   function renderReport(r){
     var box=document.getElementById("summary");
     if(!r){ box.innerHTML='<div class="card empty">No report yet — click <b>Create Report</b> to fetch every source and write the executive summary.</div>'; return; }
+    var t = r.trust;
+    if(t && !t.published){
+      var vlist = (t.violations||[]).map(function(v){ return '<li>'+esc(v)+'</li>'; }).join('');
+      box.innerHTML = '<div class="card report held">'
+        + '<div class="rhead"><div class="rtitle">⚠ Report held — not published</div>'
+        + '<div class="rmeta">the trust gate refused this brief · eval '+t.score+' (floor '+t.floor+')</div></div>'
+        + '<div class="narrative"><b>Reason:</b> '+esc(t.heldReason||'failed checks')+(vlist?'<ul class="vlist">'+vlist+'</ul>':'')+'</div>'
+        + '<div class="rfoot">The draft is withheld until it passes — the trust gate doing its job (same logic as v0).</div></div>';
+      return;
+    }
     var h='<div class="card report"><div class="rhead"><div class="rtitle">'+esc(r.title)+'</div>'+
       '<div class="rmeta">'+esc(r.window)+' · '+r.stats.items+' items · '+r.stats.sources+' sources · '+esc(engineLabel(r.engine))+'</div></div>';
     if(r.narrative) h+='<div class="narrative">'+esc(r.narrative)+'</div>';
@@ -269,7 +282,8 @@ export const PAGE = `<!doctype html>
       if(s.more>0) h+='<div class="rmore">+ '+s.more+' more</div>';
       h+='</div>';
     });
-    h+='<div class="rfoot">Generated '+esc(timeAgo(r.generatedAt))+' · '+esc(engineLabel(r.engine))+'</div></div>';
+    var trustline = t ? ' · <b style="color:var(--ok)">✓ published</b> · grounded '+Math.round((t.checks.groundedRatio||0)*100)+'% · eval '+t.score : '';
+    h+='<div class="rfoot">Generated '+esc(timeAgo(r.generatedAt))+' · '+esc(engineLabel(r.engine))+trustline+'</div></div>';
     box.innerHTML=h;
   }
 

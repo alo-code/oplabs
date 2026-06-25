@@ -6,7 +6,7 @@ import { z } from "zod";
 import { defineConnector } from "./base";
 import { credentials, type CredentialRegistry } from "./credentials";
 import { Activity, type Artifact } from "./artifact";
-import { defaultFetch, type FetchLike } from "./http";
+import { defaultFetch, HttpError, type FetchLike } from "./http";
 
 const NOTION_VERSION = "2022-06-28";
 
@@ -54,7 +54,7 @@ export function makeNotionConnector(opts: { creds?: CredentialRegistry; fetchImp
         sort: { direction: "descending", timestamp: "last_edited_time" },
       });
       const res = await doFetch("https://api.notion.com/v1/search", { method: "POST", headers: headers(t), body });
-      if (!res.ok) throw new Error(`notion search ${res.status}`);
+      if (!res.ok) throw new HttpError(res.status, `notion search ${res.status}`);
       const parsed = NotionSearch.parse(await res.json());
       const now = new Date().toISOString();
       const artifacts: Artifact[] = (parsed.results ?? []).map((p) => ({

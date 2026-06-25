@@ -6,7 +6,7 @@ import { z } from "zod";
 import { defineConnector } from "./base";
 import { credentials, type CredentialRegistry } from "./credentials";
 import { Activity, type Artifact } from "./artifact";
-import { defaultFetch, type FetchLike } from "./http";
+import { defaultFetch, HttpError, type FetchLike } from "./http";
 
 export const MondayParams = z.object({
   boardId: z.union([z.string(), z.number()]).optional(), // defaults to MONDAY_BOARD_ID
@@ -33,7 +33,7 @@ export function makeMondayConnector(opts: { creds?: CredentialRegistry; fetchImp
 
   async function gql(t: string, query: string): Promise<unknown> {
     const res = await doFetch("https://api.monday.com/v2", { method: "POST", headers: headers(t), body: JSON.stringify({ query }) });
-    if (!res.ok) throw new Error(`monday ${res.status}`);
+    if (!res.ok) throw new HttpError(res.status, `monday ${res.status}`);
     return res.json();
   }
 

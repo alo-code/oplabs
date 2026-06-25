@@ -60,6 +60,7 @@ case "${1:-help}" in
   down)   export BEACON_DB=1; run_v1 stop ;;     # stop control plane AND Postgres
   setup)  run_v1 setup ;;                         # connect services via the CLI wizard
   scenario) run_v1 scenario ;;                   # the multi-source demo runthrough
+  trust)  run_v1 trust ;;                          # the trust gate on good + bad briefs
   versions)
     echo "v0  crawl   runnable   n8n workflow + tested TS trust core      ./beacon v0 test|demo|onchain"
     echo "v1  walk    runnable   platform: connectors · memory · console  ./beacon v1 start"

@@ -19,3 +19,14 @@ export async function readError(res: { text: () => Promise<string> }): Promise<s
     return "";
   }
 }
+
+/** Carries the HTTP status so the resilience layer can tell transient (429/5xx) from terminal (4xx). */
+export class HttpError extends Error {
+  constructor(
+    public readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = "HttpError";
+  }
+}

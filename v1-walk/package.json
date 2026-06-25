@@ -12,6 +12,7 @@
     "connectors": "tsx src/demo-connectors.ts",
     "memory": "tsx src/demo-memory.ts",
     "scenario": "tsx src/demo-scenario.ts",
+    "trust": "tsx src/demo-trust.ts",
     "setup": "tsx src/setup.ts",
     "control-plane": "tsx src/control-plane/server.ts",
     "start": "./beacon.sh start",

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { defineConnector } from "./base";
 import { credentials, type CredentialRegistry } from "./credentials";
 import { Activity, type Artifact } from "./artifact";
+import { HttpError } from "./http";
 
 export const GitHubParams = z.object({
   repo: z.string().regex(/^[^/\s]+\/[^/\s]+$/, "repo must be owner/name"),
@@ -47,7 +48,7 @@ export function makeGitHubConnector(opts: { creds?: CredentialRegistry; fetchImp
         `https://api.github.com/repos/${repo}/commits` +
         `?since=${from.toISOString()}&until=${to.toISOString()}&per_page=50`;
       const res = await doFetch(url, { headers: headers(creds) });
-      if (!res.ok) throw new Error(`github commits ${res.status}: ${await safeText(res)}`);
+      if (!res.ok) throw new HttpError(res.status, `github commits ${res.status}: ${await safeText(res)}`);
       const raw = z.array(GitHubCommit).parse(await res.json());
       const artifacts: Artifact[] = raw.map((c) => ({
         kind: "commit",

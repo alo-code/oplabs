@@ -10,6 +10,7 @@
 
 import type { z } from "zod";
 import { instrumented } from "../observability/telemetry";
+import { makeLimiter, withResilience, type RetryPolicy, type RateLimitPolicy } from "./resilience";
 
 /** A point-in-time liveness signal for a source — surfaced in the control plane so a
  *  misconfigured credential is *loud*, not silent (attacks pain ⑤: no observability). */
@@ -42,6 +43,9 @@ export interface ConnectorDef<TParams, TResult> {
   fetch: (params: TParams) => Promise<TResult>;
   /** Optional cheap liveness probe (e.g. an authenticated no-op). Defaults to ok=true. */
   healthcheck?: () => Promise<{ ok: boolean; detail?: string }>;
+  /** Opt into bounded retry (default: 3 attempts) and per-connector rate-limiting, declaratively. */
+  retry?: RetryPolicy;
+  rateLimit?: RateLimitPolicy;
 }
 
 /** Wrap a connector definition into the uniform contract:
@@ -51,17 +55,23 @@ export interface ConnectorDef<TParams, TResult> {
 export function defineConnector<TParams, TResult>(
   def: ConnectorDef<TParams, TResult>,
 ): Connector<TParams, TResult> {
+  const limiter = makeLimiter(); // per-connector rate-limit state
   return {
     name: def.name,
     capabilities: def.capabilities ?? [],
     paramsSchema: def.paramsSchema,
     resultSchema: def.resultSchema,
     async fetch(params: TParams): Promise<TResult> {
-      // Uniform telemetry by construction: every connector emits requests/latency/errors with no
-      // per-connector code. parse-in and parse-out happen inside the instrumented span.
+      // Uniform telemetry + resilience by construction: every connector emits requests/latency/errors
+      // and gets bounded retry + rate-limiting with no per-connector code. Param parse is OUTSIDE the
+      // retry (a bad call shouldn't retry); only the network fetch is retried; result parse is after.
       return instrumented(def.name, async () => {
         const parsed = def.paramsSchema.parse(params);
-        const result = await def.fetch(parsed);
+        const result = await withResilience(
+          def.name,
+          { retry: def.retry, rateLimit: def.rateLimit, state: limiter },
+          () => def.fetch(parsed),
+        );
         return def.resultSchema.parse(result);
       });
     },

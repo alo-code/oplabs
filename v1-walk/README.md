@@ -8,7 +8,8 @@ TypeScript**, separate from v0 but interoperable (it emits v0's Artifact shape).
 
 | Pillar | Pain | State |
 |---|---|---|
-| **Connector library + central auth** | ③ manual per-source auth · ⑤ no observability | ✅ contract + registry, redacted credential registry, **five connectors** (GitHub + onchain live & zero-key; Slack/Notion/Monday token-gated), uniform telemetry. |
+| **Connector library + central auth** | ③ manual per-source auth · ⑤ no observability | ✅ contract + registry, redacted credential registry, **five connectors** (GitHub + onchain live & zero-key; Slack/Notion/Monday token-gated), uniform telemetry, **bounded retry + rate-limit**. |
+| **Trust gate** (the exec brief earns publication) | grounding · no fabricated metrics · no leaks | ✅ v0's grounding + eval gate ported (`src/trust/gate.ts`) — **Create Report is held, not published**, if ungrounded / a figure is invented / a secret leaks (`npm run trust`). |
 | **Shared memory** (in-memory + Postgres/pgvector) | ① re-fetch · ④ no shared memory | ✅ one `MemoryStore` interface, two impls (same contract suite), write-through + dedup + semantic recall; cross-agent read proven. |
 | **Control plane** (non-engineer surface) | ⑥ not non-engineer-usable | ✅ a zero-dep HTTP page: one **Create Report** button → fetch every source → live activity feed → a **grounded executive summary** (the case study's exec brief, on the platform), connector health, run history, metrics. |
 
@@ -69,6 +70,7 @@ npm test              # 39 pass / 1 skip (Postgres needs DATABASE_URL) — all o
 npm run connectors    # REAL: GitHub public commits + an OP Mainnet read; registry health + metrics
 npm run memory        # REAL: agent A writes GitHub activity → agent B reads it via semantic recall
 npm run scenario      # the multi-source demo runthrough (fixtures + live)
+npm run trust         # the trust gate on a good brief + 3 bad ones (held, not published)
 npm run control-plane # → http://localhost:7878 (foreground; Ctrl+C to stop)
 ```
 Evidence of real runs: `evidence/{connectors-library,shared-memory,control-plane,scenario}/`.

@@ -452,3 +452,21 @@ npm test
   built status table + "shipped beyond the specs" + a **What's next** list; updated `todo/README.md`.
 - Next-steps captured for real now: trust-as-a-service (eval-gate the exec summary), connector
   resilience (C3.1), memory governance (M3.3), scheduling (always-on), the OTel/Langfuse backend.
+
+## 2026-06-25 — next-steps 1 & 2: trust gate + connector resilience
+
+- **Step 1 — trust-as-a-service.** Ported v0's grounding + eval gate to v1's multi-source report
+  (`src/trust/gate.ts`). The exec summary is grounded by construction, so the gate's real jobs: score
+  that property, **police the LLM narrative** (free text — can hallucinate a metric), and **refuse to
+  publish** on a hard violation (ungrounded / fabricated figure / secret leak) — same spine as v0,
+  including "a brief that scores 1.0 is still HELD if it leaks a key." Wired into `POST /api/report`;
+  the page shows ✓ published (grounded %, eval) or a red "Report held" card with the reason.
+  `npm run trust` parallels v0's `npm run demo`. Eval-set `test/trust/gate.test.ts`.
+- **Step 2 — connector resilience (C3.1).** `src/connectors/resilience.ts`, wired into
+  `defineConnector` so every connector gets bounded retry + optional rate-limit for free. Added an
+  `HttpError(status)` so the layer tells transient (network/429/5xx → retry w/ backoff) from terminal
+  (4xx, bad shape → fail fast); metrics `connector_retries_total` / `connector_ratelimited_total`.
+  Param-parse is OUTSIDE the retry (a malformed call shouldn't retry); only the network call retries.
+- Reconciled the specs: connectors-library C3.1 → shipped; v1 docs "What's next" trimmed to the last 3
+  (memory governance, scheduling, OTel backend) + a stretch (extract the trust gate to an HTTP service).
+  typecheck clean, **63 passed / 1 skipped**. Live report verified gated: published, eval 1.0, 100% grounded.

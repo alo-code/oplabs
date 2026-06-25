@@ -16,6 +16,7 @@ import type { MemoryStore } from "../memory/store";
 import { metrics, logger } from "../observability/telemetry";
 import { executeRun, type RunSummary } from "./run";
 import { pickSummarizer, type Report } from "../agents/exec-summary/summary";
+import { gateReport, type TrustVerdict } from "../trust/gate";
 import { loadEnv, upsertEnv } from "../core/env";
 import { serviceBySource, envVarsFor } from "../core/services";
 import { PAGE } from "./page";
@@ -52,10 +53,11 @@ function saveRuns(): void {
 const runs: RunSummary[] = loadRuns();
 
 // The last executive summary persists too, so it survives a restart and shows on page load.
+type GatedReport = Report & { trust?: TrustVerdict };
 const REPORT_FILE = "control-plane-report.json";
-function loadReport(): Report | null {
+function loadReport(): GatedReport | null {
   try {
-    return JSON.parse(readFileSync(REPORT_FILE, "utf8")) as Report;
+    return JSON.parse(readFileSync(REPORT_FILE, "utf8")) as GatedReport;
   } catch {
     return null;
   }
@@ -67,7 +69,7 @@ function saveReport(): void {
     /* best-effort */
   }
 }
-let lastReport: Report | null = loadReport();
+let lastReport: GatedReport | null = loadReport();
 
 /** Sensible default fetch params per source, used by "Create Report" (run everything). */
 function defaultParams(name: string): unknown {
@@ -144,9 +146,19 @@ const server = http.createServer(async (req, res) => {
     // Create Report, step 2: synthesize the grounded executive summary from shared memory.
     if (req.method === "POST" && url.pathname === "/api/report") {
       const items = await store.recall({ limit: 80 });
-      lastReport = await pickSummarizer().summarize(items, new Date().toISOString());
+      const report = await pickSummarizer().summarize(items, new Date().toISOString());
+      // The set of artifact ids/urls actually in memory — the gate grounds every bullet against it.
+      const validIds = new Set<string>();
+      for (const i of items) {
+        const p = i.payload as { id?: string; url?: string } | null;
+        if (p?.id) validIds.add(p.id);
+        if (p?.url) validIds.add(p.url);
+        validIds.add(i.sourceId);
+      }
+      const trust = gateReport(report, validIds);
+      lastReport = { ...report, trust };
       saveReport();
-      logger.info("control_plane.report", { engine: lastReport.engine, items: lastReport.stats.items });
+      logger.info("control_plane.report", { engine: report.engine, items: report.stats.items, published: trust.published, score: trust.score });
       return json(res, 200, lastReport);
     }
     if (req.method === "POST" && url.pathname === "/api/run") {

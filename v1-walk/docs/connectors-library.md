@@ -203,7 +203,9 @@ stage is the existing exec-brief test suite staying green (behavior unchanged).
     (token-gated) — exceeds C2's "two more"; all on the shared `{kind,source,id,url,label}` Artifact.
   - **Local auth** (beyond the original plan): in-app "Connect a service" + `./beacon setup`, over a
     shared catalog (`core/services.ts`), tokens → gitignored `.env`, live-applied.
-- **Descoped / deferred:** the **C3.1 retry + rate-limit wrapper** (bounded retry, per-connector
-  declarative limits) — connectors fail loud today but don't yet back off; this is the top resilience
-  follow-up. "Central auth" shipped as a redacting registry, not a vault/OAuth (that's the Run stage).
+  - **C3.1 retry + rate-limit:** ✅ now shipped too (`src/connectors/resilience.ts`, wired into
+    `defineConnector`) — bounded retry on transient (network/429/5xx), fail-fast on terminal (4xx),
+    optional per-connector min-interval, with `connector_retries_total` / `connector_ratelimited_total`.
+- **Descoped / deferred:** a **declarative per-connector limit registry** (limits still set per
+  `defineConnector` call). "Central auth" shipped as a redacting registry, not a vault/OAuth (Run stage).
 - **Evidence:** `../evidence/connectors-library/` (real zero-key run + the 5-source health list).
