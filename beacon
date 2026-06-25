@@ -23,6 +23,7 @@ beacon — run or test any version from the repo root
 
   ./beacon up                        run v1 fully locally: Postgres+pgvector + control plane
   ./beacon down                      stop the local stack (control plane + Postgres)
+  ./beacon setup                     connect your services (Slack/Notion/Monday/…) via a CLI wizard
   ./beacon scenario                  multi-source demo runthrough (Slack/Notion/Monday + GitHub/onchain)
   ./beacon versions                  list versions + runnable state
   ./beacon test                      run every runnable version's tests
@@ -57,6 +58,7 @@ case "${1:-help}" in
   help|-h|--help) usage ;;
   up)     export BEACON_DB=1; run_v1 restart ;;  # Postgres up (idempotent) + server freshly on it
   down)   export BEACON_DB=1; run_v1 stop ;;     # stop control plane AND Postgres
+  setup)  run_v1 setup ;;                         # connect services via the CLI wizard
   scenario) run_v1 scenario ;;                   # the multi-source demo runthrough
   versions)
     echo "v0  crawl   runnable   n8n workflow + tested TS trust core      ./beacon v0 test|demo|onchain"

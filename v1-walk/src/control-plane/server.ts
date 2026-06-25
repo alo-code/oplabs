@@ -17,21 +17,13 @@ import { metrics, logger } from "../observability/telemetry";
 import { executeRun, type RunSummary } from "./run";
 import { pickSummarizer, type Report } from "../agents/exec-summary/summary";
 import { loadEnv, upsertEnv } from "../core/env";
+import { serviceBySource, envVarsFor } from "../core/services";
 import { PAGE } from "./page";
 
 loadEnv(); // populate process.env from a local .env before anything reads credentials
 
 const PORT = Number(process.env.PORT ?? 7878);
 const ENV_FILE = ".env";
-
-// Which env vars each service writes when you "Connect" it locally (token + optional target).
-const CONNECT: Record<string, { token: string; target?: string }> = {
-  github: { token: "GITHUB_TOKEN" },
-  slack: { token: "SLACK_TOKEN", target: "SLACK_CHANNEL" },
-  notion: { token: "NOTION_TOKEN" },
-  monday: { token: "MONDAY_TOKEN", target: "MONDAY_BOARD_ID" },
-  anthropic: { token: "ANTHROPIC_API_KEY" },
-};
 
 const fixtures = !!process.env.BEACON_FIXTURES; // demo mode: Slack/Notion/Monday replay fixtures
 const registry = fixtures ? fixtureRegistry() : defaultRegistry();
@@ -125,18 +117,15 @@ const server = http.createServer(async (req, res) => {
     // Authenticate a service locally: paste a token, persist to .env, live-update process.env, re-probe.
     if (req.method === "POST" && url.pathname === "/api/connect") {
       const body = JSON.parse((await readBody(req)) || "{}") as { source?: string; token?: string; target?: string };
-      const spec = body.source ? CONNECT[body.source] : undefined;
+      const spec = body.source ? serviceBySource(body.source) : undefined;
       if (!spec) return json(res, 400, { ok: false, error: "unknown service" });
-      const vars: Record<string, string> = {};
-      const token = (body.token ?? "").trim();
-      const target = (body.target ?? "").trim();
-      if (token) (process.env[spec.token] = token), (vars[spec.token] = token);
-      if (spec.target && target) (process.env[spec.target] = target), (vars[spec.target] = target);
+      const vars = envVarsFor(spec, body.token ?? "", body.target);
+      for (const [k, v] of Object.entries(vars)) process.env[k] = v;
       if (Object.keys(vars).length) upsertEnv(ENV_FILE, vars);
-      const connector = registry.get(body.source!);
-      const health = connector ? await connector.healthcheck() : { connector: body.source!, ok: true, detail: "saved" };
-      logger.info("control_plane.connect", { source: body.source, set: Object.keys(vars) }); // keys only, never values
-      return json(res, 200, { ok: health.ok, source: body.source, health });
+      const connector = registry.get(spec.source);
+      const health = connector ? await connector.healthcheck() : { connector: spec.source, ok: true, detail: "saved" };
+      logger.info("control_plane.connect", { source: spec.source, set: Object.keys(vars) }); // keys only, never values
+      return json(res, 200, { ok: health.ok, source: spec.source, health });
     }
     // Create Report, step 1: fetch every HEALTHY source into shared memory.
     if (req.method === "POST" && url.pathname === "/api/run-all") {

@@ -3,7 +3,7 @@
 **Branch**: `feat/connectors-library` (suggested)
 **Drafted**: 2026-06-23
 **Sizing**: ~3–4 engineer-days
-**Status**: drafted
+**Status**: ✅ closed (thin-but-real slice — see Completion at the bottom)
 **Stage**: Walk (first Walk workplan)
 **Depends on**: `exec-brief-slice.md` 1.1 (config) + 1.2 (GitHub connector). This
 workplan generalizes both. Does **not** depend on the Postgres memory workplan —
@@ -188,5 +188,22 @@ stage is the existing exec-brief test suite staying green (behavior unchanged).
 - **Revert order**: disable the new connector(s) in the registry → revert C3 →
   revert C1.3. C1.1/C1.2 leave the system improved and safe to keep.
 
-## Completion (fill when closed)
-- **Shipped** / **Graduated** / **Descoped** / **Evidence**: `evidence/connectors-library/`
+## Completion
+
+**Status: closed as a thin-but-real slice** (2026-06-25). Built in `../src/connectors/`, runnable
+(`npm run connectors`), evidence in `../evidence/connectors-library/`.
+
+- **Shipped:**
+  - The connector **contract** (`base.ts` `defineConnector` — zod parse-in/out) + **uniform telemetry
+    by construction** (every connector emits requests/latency/errors with no per-connector code) — C1.1.
+  - **Central credential registry** (`credentials.ts`) — one audited resolve point; a `Secret` that
+    refuses to serialize (proven by test). No connector reads `process.env` for secrets — C1.2.
+  - **Registry + discovery + live health** (`registry.ts`, `registry-default.ts`) — C3.2.
+  - **Five real connectors**: GitHub + onchain (zero-key, live) and Slack + Notion + Monday
+    (token-gated) — exceeds C2's "two more"; all on the shared `{kind,source,id,url,label}` Artifact.
+  - **Local auth** (beyond the original plan): in-app "Connect a service" + `./beacon setup`, over a
+    shared catalog (`core/services.ts`), tokens → gitignored `.env`, live-applied.
+- **Descoped / deferred:** the **C3.1 retry + rate-limit wrapper** (bounded retry, per-connector
+  declarative limits) — connectors fail loud today but don't yet back off; this is the top resilience
+  follow-up. "Central auth" shipped as a redacting registry, not a vault/OAuth (that's the Run stage).
+- **Evidence:** `../evidence/connectors-library/` (real zero-key run + the 5-source health list).

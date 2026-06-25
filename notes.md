@@ -437,3 +437,18 @@ npm test
 - **Docs:** `docs/onboarding.html` (Quickstart) per the docs-site skill — clone → `./beacon up` →
   connect services → Create Report, with a flow SVG + a per-service token table; added "Quickstart"
   to the nav across all 6 pages.
+
+## 2026-06-25 — ./beacon setup CLI wizard + reconciled the specs
+
+- Built `./beacon setup` (`src/setup.ts`) — the terminal twin of the in-app Connect flow. Shares ONE
+  catalog with the server (`src/core/services.ts`) so the two paths can't drift (refactored
+  `/api/connect` onto it). Token input is **hidden in a real terminal** (suppressed echo — won't leak
+  on a screen-share); non-TTY input is buffered up front so it's scriptable/testable (the naive
+  readline+pipe approach dropped lines — fixed). Verified via a piped smoke test (sets just the
+  Anthropic key, writes `.env`). Tested `services.ts` + `env.ts`. typecheck clean, 51 passed / 1 skipped.
+- **Reconciled todo/specs (they were stale, still "design-only"):** added **Completion** records to
+  both Walk workplans (connectors-library, shared-memory-postgres) — what shipped vs. deferred (retry/
+  rate-limit; retention/PII; hybrid recall); rewrote `v1-walk/docs/README.md` from "design-only" to a
+  built status table + "shipped beyond the specs" + a **What's next** list; updated `todo/README.md`.
+- Next-steps captured for real now: trust-as-a-service (eval-gate the exec summary), connector
+  resilience (C3.1), memory governance (M3.3), scheduling (always-on), the OTel/Langfuse backend.

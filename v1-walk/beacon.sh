@@ -89,8 +89,9 @@ case "${1:-}" in
   status)  status ;;
   demo)    demo ;;
   scenario) ensure_deps; npm run scenario ;;
+  setup)   ensure_deps; npm run setup ;;
   test)    ensure_deps; npm test ;;
   logs)    tail -f "$LOG_FILE" ;;
-  *) echo "usage: ./beacon.sh {start|stop|restart|status|demo|scenario|test|logs}";
+  *) echo "usage: ./beacon.sh {start|stop|restart|status|setup|demo|scenario|test|logs}";
      echo "  env: PORT=$PORT  BEACON_DB=1 (Postgres via Docker)"; exit 1 ;;
 esac

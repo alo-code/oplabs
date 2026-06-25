@@ -73,8 +73,11 @@ cd oplabs
   need a token.</p>
 
   <h2>2 · Authenticate your services <span style="color:var(--muted)">— right in the app</span></h2>
-  <p>Click <b>+ Connect a service</b> (or a source's <b>Connect</b> button), choose the service, and
-  paste its token. The connector turns healthy immediately — no restart, no editing files by hand.</p>
+  <p>Two ways — both write to the same gitignored <code>v1-walk/.env</code> and apply immediately:</p>
+  <div class="grid">
+    <div class="card"><b>In the app</b> — click <b>+ Connect a service</b> (or a source's <b>Connect</b>), choose the service, paste its token. The connector turns healthy with no restart.</div>
+    <div class="card"><b>In the terminal</b> — <code>./beacon setup</code> walks every service (token input is hidden), verifies each, and writes <code>.env</code>.</div>
+  </div>
   <div class="grid">
     <div class="card"><b>Slack</b> — a bot token <code>xoxb-…</code> (scope <code>channels:history</code>) + a channel ID. <span style="color:var(--muted)">api.slack.com/apps</span></div>
     <div class="card"><b>Notion</b> — an internal integration token <code>secret_…</code>; share your pages with it. <span style="color:var(--muted)">notion.so/my-integrations</span></div>

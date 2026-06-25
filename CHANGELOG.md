@@ -21,6 +21,17 @@ to this file (under `## [Unreleased]`) plus an `evidence/<workplan>/` dir.
     `docker-compose.yml` + `migrations/`. Evidence: `v1-walk/evidence/shared-memory/`.
   - **Control plane** (pain ⑥): a zero-dependency `node:http` page — connectors + health, Run-now,
     recent memory, run history, metrics. `npm run control-plane`. Evidence: `v1-walk/evidence/control-plane/`.
+- **Control plane: one "Create Report" button** → fetch every healthy source → live activity feed →
+  a **grounded executive summary** (`src/agents/exec-summary/`); Claude narrative when keyed, grounded
+  + deterministic otherwise.
+- **Local onboarding + authentication**: `docs/onboarding.html` (Quickstart, in the nav); **"Connect a
+  service"** in the app and a **`./beacon setup`** CLI wizard over one shared catalog
+  (`src/core/services.ts`) — tokens to a gitignored `.env`, live-applied; the server binds localhost
+  and never logs token values.
+- **Demo runthrough**: `./beacon scenario` + `BEACON_FIXTURES=1` replay Slack/Notion/Monday through the
+  real pipeline (labeled "demo data"); `src/connectors/fixtures.ts`.
+- **v1 Walk workplans closed** with Completion records (connectors-library, shared-memory-postgres) —
+  what shipped vs. deferred (retry/rate-limit, retention/PII, hybrid recall).
 - **ADR 0003 — observability**: instrument once (OpenTelemetry + pino + Langfuse for the LLM layer)
   behind the in-house facade; backend destination deferred (config, not code).
 - Repo scaffold: five-stage `CADENCE.md`, `CLAUDE.md`, `skills/`, `todo/`,

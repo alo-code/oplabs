@@ -3,7 +3,7 @@
 **Branch**: `feat/shared-memory-postgres` (suggested)
 **Drafted**: 2026-06-23
 **Sizing**: ~3–4 engineer-days
-**Status**: drafted
+**Status**: ✅ closed (thin-but-real slice — see Completion at the bottom)
 **Stage**: Walk (second Walk workplan)
 **Depends on**: `exec-brief-slice.md` 1.3 (the `MemoryStore` interface + file
 impl). This workplan adds a Postgres impl **behind the same interface**, so
@@ -215,5 +215,27 @@ as the contract and the consuming code as a later green.
 - **Revert order**: `MEMORY_BACKEND=file` (instant) → revert M2/M3 → keep M1 (a working
   Postgres store is independently useful). Each phase leaves the system working.
 
-## Completion (fill when closed)
-- **Shipped** / **Graduated** / **Descoped** / **Evidence**: `evidence/shared-memory-postgres/`
+## Completion
+
+**Status: closed as a thin-but-real slice** (2026-06-25). Built in `../src/memory/`, runnable
+(`npm run memory`; `npm run db:up` for Postgres). Evidence in `../evidence/shared-memory/` +
+`../evidence/local-postgres/`.
+
+- **Shipped:**
+  - One **`MemoryStore`** interface, two impls — `InMemoryStore` (zero-key) and `PostgresStore`
+    (Postgres + pgvector) — held to the **same contract suite** (M1). Dedup keyed by
+    `(source, source_id)`, not content. `docker-compose.yml` + `migrations/0001_memory.sql`.
+  - **Semantic recall** via pgvector cosine, behind a **swappable `Embeddings`** interface with a
+    zero-key local (lexical) stand-in — M2.1/M2.2.
+  - **Write-through** + a proven **cross-process read** (the control-plane process and the demo both
+    read/write one Postgres) — the M3.2 "shared memory" payoff, made concrete.
+- **Descoped / deferred:**
+  - **M3.3 retention + PII hooks** (per-source TTL, field redaction, metadata-vs-body policy) — NOT
+    built. This is the Security/Legal seam and the most important governance follow-up before real
+    bodies are stored.
+  - **M2.3 hybrid recall** (structured filter + semantic rank in one call) — basic structured and
+    semantic recall shipped; combined ranking deferred.
+  - **Embedding cost guard** (dedup embeddings by content hash) — moot for the free local embedder;
+    needed when a real provider is wired.
+- **Evidence:** `../evidence/shared-memory/` (cross-agent read) + `../evidence/local-postgres/`
+  (the contract suite running green against real Postgres — 34/34).
