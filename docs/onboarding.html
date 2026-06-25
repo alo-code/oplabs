@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Beacon — Quickstart · OP Labs Case Study</title>
+<link rel="stylesheet" href="assets/beacon.css" />
+</head>
+<body>
+<!-- NAV: canonical block — keep in sync across pages (see skills/docs-site.md) -->
+<header class="site-top"><nav>
+  <a class="brand" href="index.html">Beacon</a>
+  <div class="nav-links">
+    <a href="index.html">Overview</a>
+    <a href="onboarding.html" class="active">Quickstart</a>
+    <a href="problem-map.html">Problem map</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="crawl-walk-run.html">Roadmap</a>
+    <a href="versions.html">Versions</a>
+  </div>
+  <a class="nav-op" href="https://www.oplabs.co/" target="_blank" rel="noopener">for OP Labs ↗</a>
+</nav></header>
+
+<main>
+  <span class="tag">OP Labs Case Study · Option 1</span>
+  <h1>Quickstart: from clone to running locally</h1>
+  <p class="sub lede">Get the v1 (walk) platform running on your machine in ~2 minutes, then
+  authenticate your own services right from the running app and generate an executive report.</p>
+
+  <figure>
+    <svg class="dgm" viewBox="0 0 880 120" role="img" aria-label="Clone, run, connect services, create a report">
+      <defs>
+        <marker id="ob" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path class="d-arrow" d="M0,0 L9,4.5 L0,9 Z"/>
+        </marker>
+      </defs>
+      <rect class="d-box" x="20" y="38" width="180" height="50" rx="10"/>
+      <text class="d-title" x="110" y="60" text-anchor="middle" font-size="13">1 · Clone</text>
+      <text class="d-label" x="110" y="77" text-anchor="middle" font-size="11">git clone</text>
+      <line class="d-flow thin" x1="200" y1="63" x2="240" y2="63" marker-end="url(#ob)"/>
+      <rect class="d-box" x="243" y="38" width="180" height="50" rx="10"/>
+      <text class="d-title" x="333" y="60" text-anchor="middle" font-size="13">2 · ./beacon up</text>
+      <text class="d-label" x="333" y="77" text-anchor="middle" font-size="11">Postgres + control plane</text>
+      <line class="d-flow thin" x1="423" y1="63" x2="463" y2="63" marker-end="url(#ob)"/>
+      <rect class="d-box accent" x="466" y="38" width="180" height="50" rx="10"/>
+      <text class="d-title" x="556" y="60" text-anchor="middle" font-size="13">3 · Connect services</text>
+      <text class="d-label" x="556" y="77" text-anchor="middle" font-size="11">paste tokens, local</text>
+      <line class="d-flow thin" x1="646" y1="63" x2="686" y2="63" marker-end="url(#ob)"/>
+      <rect class="d-box accent" x="689" y="38" width="171" height="50" rx="10"/>
+      <text class="d-title" x="774" y="60" text-anchor="middle" font-size="13">4 · Create Report</text>
+      <text class="d-label" x="774" y="77" text-anchor="middle" font-size="11">grounded summary</text>
+    </svg>
+    <figcaption>One command brings the platform up; you authenticate your sources in the app, then one button writes the brief.</figcaption>
+  </figure>
+
+  <h2>Before you start</h2>
+  <div class="grid grid-3">
+    <div class="card"><b>Node ≥ 20</b> — the platform is TypeScript (ESM).</div>
+    <div class="card"><b>Docker</b> <span style="color:var(--muted)">(optional)</span> — for the real Postgres + pgvector store. Without it, Beacon uses an in-memory store.</div>
+    <div class="card"><b>git</b> — to clone. No API keys needed to start: GitHub (public) + onchain run with zero keys.</div>
+  </div>
+
+  <h2>1 · Clone &amp; start</h2>
+  <p>Clone the repo and bring the platform up with a single command. <code>./beacon up</code> starts
+  Postgres + pgvector (via Docker) and the control plane on it:</p>
+  <pre>git clone https://github.com/alo-code/oplabs.git
+cd oplabs
+./beacon up                 # → http://localhost:7878</pre>
+  <p class="note"><span class="k">No Docker?</span> Run <code>./beacon v1 start</code> instead — it uses
+  the in-memory store (everything works; memory just isn't durable across restarts).</p>
+  <p>Open <code>http://localhost:7878</code>. <b>GitHub</b> and <b>onchain</b> are already live and
+  healthy — no keys. <b>Slack</b>, <b>Notion</b>, and <b>Monday</b> show <b>Connect</b>, because they
+  need a token.</p>
+
+  <h2>2 · Authenticate your services <span style="color:var(--muted)">— right in the app</span></h2>
+  <p>Click <b>+ Connect a service</b> (or a source's <b>Connect</b> button), choose the service, and
+  paste its token. The connector turns healthy immediately — no restart, no editing files by hand.</p>
+  <div class="grid">
+    <div class="card"><b>Slack</b> — a bot token <code>xoxb-…</code> (scope <code>channels:history</code>) + a channel ID. <span style="color:var(--muted)">api.slack.com/apps</span></div>
+    <div class="card"><b>Notion</b> — an internal integration token <code>secret_…</code>; share your pages with it. <span style="color:var(--muted)">notion.so/my-integrations</span></div>
+    <div class="card"><b>Monday</b> — an API v2 token + a board ID. <span style="color:var(--muted)">developer.monday.com</span></div>
+    <div class="card"><b>GitHub</b> <span style="color:var(--muted)">(optional)</span> — a read PAT to lift the public rate limit. <span style="color:var(--muted)">github.com/settings/tokens</span></div>
+    <div class="card"><b>Anthropic</b> <span style="color:var(--muted)">(optional)</span> — an API key to upgrade the report to a Claude-written narrative. <span style="color:var(--muted)">console.anthropic.com</span></div>
+  </div>
+  <p class="note red"><span class="k">Where tokens live.</span> Saved to <code>v1-walk/.env</code>
+  (gitignored) and applied to the running process — never committed, never logged (only the variable
+  <em>names</em> appear in logs). The control plane binds to <code>localhost</code> only. This is local-dev
+  convenience over Beacon's <b>central credential registry</b>; in production the same registry is backed
+  by OAuth + a secrets vault (see the <a href="architecture.html">Architecture</a>).</p>
+
+  <h2>3 · Create the report</h2>
+  <p>Click <b>Create Report</b>. Beacon fetches every healthy source into shared memory, refreshes the
+  activity feed, and writes a <b>grounded executive summary</b> — every line links to its real artifact
+  (a GitHub commit, an Etherscan block, a Slack message, a Monday item, a Notion page). With an Anthropic
+  key set, it adds a Claude-written narrative <em>over</em> those same grounded facts.</p>
+
+  <h2>Just want to see it? Run the demo</h2>
+  <p>No tokens at all — replayed Slack/Notion/Monday data through the <em>real</em> pipeline (labeled
+  &ldquo;demo data&rdquo;), alongside live GitHub + onchain:</p>
+  <pre>./beacon scenario               # narrated multi-source runthrough (terminal)
+BEACON_FIXTURES=1 ./beacon up   # the control plane with all 5 sources live</pre>
+
+  <h2>Stopping &amp; more</h2>
+  <pre>./beacon down                   # stop the control plane AND Postgres
+./beacon status                 # is it running? live health
+./beacon versions               # what each version is + what's runnable
+./beacon v0 demo                # the v0 (crawl) trust gate · ./beacon v0 onchain (a real OP read)</pre>
+  <p>Everything also runs without keys on a fresh clone: <code>cd v1-walk &amp;&amp; npm test</code> is green
+  (the suite is offline), and <code>npm run connectors</code> / <code>npm run memory</code> make real,
+  zero-key calls. Full reference: <code>v1-walk/README.md</code>.</p>
+
+  <div class="next">
+    <a href="index.html"><div class="k">← Back</div><div class="v">Overview</div></a>
+    <a href="architecture.html"><div class="k">Next →</div><div class="v">Architecture</div></a>
+  </div>
+</main>
+<footer class="site-foot"><div class="foot-in">
+  <span class="foot-brand">Beacon</span>
+  <span>A case study for <a href="https://www.oplabs.co/" target="_blank" rel="noopener">OP Labs</a> · Option 1</span>
+  <span class="foot-tag">“Scale Ethereum, Build Optimism”</span>
+</div></footer>
+</body></html>

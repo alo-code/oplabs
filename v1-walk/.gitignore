@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.env
+*.log
+.beacon-control-plane.pid
+control-plane-runs.json
+control-plane-report.json

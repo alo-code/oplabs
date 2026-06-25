@@ -1,0 +1,36 @@
+{
+  "name": "oplabs-walk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Beacon walk (v1) — the platform: connector library + central auth, Postgres+pgvector shared memory, a minimal non-engineer control plane. OP Labs case study, Option 1.",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "connectors": "tsx src/demo-connectors.ts",
+    "memory": "tsx src/demo-memory.ts",
+    "scenario": "tsx src/demo-scenario.ts",
+    "control-plane": "tsx src/control-plane/server.ts",
+    "start": "./beacon.sh start",
+    "stop": "./beacon.sh stop",
+    "restart": "./beacon.sh restart",
+    "status": "./beacon.sh status",
+    "demo": "./beacon.sh demo",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down"
+  },
+  "dependencies": {
+    "pg": "^8.13.0",
+    "viem": "^2.21.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2",
+    "vitest": "^2.1.1"
+  }
+}

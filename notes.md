@@ -271,3 +271,169 @@ npm test
 - Relabeled v2 "the vision" → "org-wide & governed" so there's a single end-state vision (v3).
 - CSS: added `--gray-4` (ramp continues — furthest out = lightest), `.stage-sprint`, `.grid-4`.
 - Honest note: v3 is **design-only** — no MCP code yet. It's the direction, gated on v2 existing.
+
+## 2026-06-24 — kickoff: actually build v1 (walk) as real TS
+
+- Interviewed myself (via the AI) on scope before writing code. Decisions: **keep v0 as the n8n
+  workflow + trust core** (don't rewrite it); **build v1 as real TS, as a separate showcase** that
+  can interoperate with v0. v1 depth = **thin but real slice** (connector library + central auth,
+  Postgres+pgvector memory, a minimal control plane). Runnable bar = **zero-key tests + keyed real
+  run** on a fresh clone. Live creds today: **only n8n** — so the two genuinely-real connectors will
+  be GitHub *public* repos (no token) + OP Mainnet onchain reads (no key); the rest get the same
+  interface and run when creds land.
+- Pinned the case study (Option 1 + the 4 deliverables + the 6 pains) into `CLAUDE.md` on purpose,
+  so the task is always in context for every session. It's a fixed external fact → can't drift.
+- Built v1-walk W1.1 + W1.2 (TDD, green): the connector contract (`defineConnector` — parse-in /
+  parse-out via zod) + a registry (discovery + live health); a dependency-free telemetry facade
+  (logs→stderr + in-memory metrics) wired into *every* connector by construction; a central
+  credential registry whose `Secret` refuses to serialize (redaction proven by test). 11/11 vitest,
+  typecheck clean. Reused v0's `{kind,source,id,url,label}` Artifact shape so v1 connectors are
+  groundable by v0's trust gate — the "separate but interoperable" point, concretely.
+
+## 2026-06-24 — observability: decided, deferred the destination
+
+- Q (me): what service for logging/telemetry throughout? Talked it through instead of just picking.
+  Landed on: **don't pick a vendor first — pick a wire format.** Instrument once with
+  **OpenTelemetry + pino**, plus **Langfuse** for the LLM layer (tokens/cost/eval/grounding — the
+  case study's metrics are LLM-shaped), all behind the facade I already built so agent code never
+  imports a vendor. Destination = config (Collector), staged crawl→walk→run, self-host favored for
+  data residency (internal Slack/HubSpot/Notion content shouldn't leave OP Labs' boundary un-scrubbed).
+- Chose to **note the decision and move on** rather than wire a backend into the thin slice (would
+  break the zero-key fresh-clone bar). Captured as `adr/0003-observability.md`; OTLP export is a
+  tracked follow-up, not built now. The facade stays the seam.
+
+## 2026-06-24 — v1 W2 (shared memory) + W3 (control plane), both runnable
+
+- **W2 — shared memory (TDD, green):** one `MemoryStore` interface, two impls — `InMemoryStore`
+  (zero-key default) and `PostgresStore` (Postgres + pgvector via docker-compose) — held to the
+  *same* contract suite (Postgres branch skips without `DATABASE_URL`, so a fresh clone stays green).
+  Dedup keyed by `(source, sourceId)` not content (carried v0's footgun note). Semantic recall via a
+  swappable `Embeddings` interface; shipped a dependency-free LOCAL lexical stand-in so recall works
+  offline — honest that it's lexical, not semantic (real provider drops in when keyed). `npm run
+  memory` proves it on real data: agent "exec-brief" writes 47 real commits, re-run dedups all 47,
+  agent "qa-probe" reads them back via semantic recall — pain ④ fixed, concretely.
+- **W3 — control plane (TDD, green):** a zero-dependency `node:http` server + one self-contained HTML
+  page (no build, no framework) — connectors + live health, Run-now, recent shared memory, run
+  history, metrics. Extracted `executeRun` so the run logic is unit-tested offline (unknown connector
+  / connector error → a summary, never a crash). Booted it and exercised every endpoint via curl:
+  real onchain run (2 OP Mainnet blocks) + real GitHub run (47 commits) stored + visible in history.
+  Pain ⑥ fixed. Evidence in `v1-walk/evidence/{shared-memory,control-plane}/`.
+- Net: the thin-but-real v1 slice runs end to end on a fresh clone with zero keys — connectors →
+  shared memory → a non-engineer page — and every artifact stays groundable by v0's trust gate.
+  30 tests (29 + 1 skipped Postgres), typecheck clean.
+
+## 2026-06-25 — onboarding: one script to start/stop/restart
+
+- Ran the two demos live again (fresh data: block 153380876, 47 commits) to confirm.
+- Wrote `v1-walk/beacon.sh` — one entry point for onboarding devs: `start|stop|restart|status|
+  demo|logs`. Backgrounds the control plane with a pid file + health-wait; `stop` also frees the
+  port via lsof (the node child of npm can outlive the npm pid). `BEACON_DB=1` brings Postgres up/down
+  with it. Mirrored as `npm start|stop|run restart|run status|run demo`. Verified the full lifecycle
+  (start → status → restart → a real API run → stop, port freed). gitignored the pid file.
+- Added a repo-root `./beacon` dispatcher so any version runs/tests from the root without cd-ing in:
+  `./beacon versions|test|status|stop`, `./beacon v0 test|demo|onchain`, `./beacon v1 <lifecycle>`.
+  It delegates to each version's own runner (v1 → `v1-walk/beacon.sh`); v2/v3 print a design-only
+  notice. Verified across versions (v1 start/status/stop + a real v0 onchain read). Documented in the
+  root README.
+
+## 2026-06-25 — run all locally (v1 on real Postgres+pgvector)
+
+- Goal (user): run v1 fully locally on the real substrate, one command. Added `./beacon up` / `down`.
+- **Hardened the Postgres impl** before it ever ran for real: the INSERT needed explicit `$5::jsonb`
+  and `$6::vector` casts (bind params arrive as text). Good thing — this path had only ever been the
+  *skipped* contract suite.
+- **Caught a lifecycle bug in my own script** while proving it: `up` was "start if not running", so a
+  stale in-memory control plane got reused instead of switching to Postgres (status still said
+  in-memory; the API run wrote to the wrong process). Refactored `beacon.sh` to manage the **server**
+  and the **DB** separately: `restart` bounces only the server onto the current DB (never tears
+  Postgres down), and root `./beacon up` = `BEACON_DB=1 restart`. Re-proved clean.
+- Docker daemon (colima) wouldn't boot — stale Lima disk lock ("attach disk … in use"); `colima stop
+  -f` + `colima start` fixed it. (Left colima running.)
+- **Proof:** `./beacon up` → `status` reports `postgres+pgvector`; two real page-API runs persisted
+  47 github + 3 onchain rows **in Postgres** (queried the DB directly); full suite **34/34** with
+  `DATABASE_URL` set (the Postgres contract suite no longer skips). Evidence:
+  `v1-walk/evidence/local-postgres/`.
+
+## 2026-06-25 — control-plane UI: "looks like mock data" → prove it + style it
+
+- Feedback (user, w/ screenshot): the page looks like mock data; style it. Fair — two causes:
+  (1) "Run history: no runs yet" sat next to populated memory because run history was in-process and
+  got wiped by the `./beacon up` restart while Postgres kept the memory → reads as fake;
+  (2) wireframe-plain styling.
+- Fixes: **persisted run history** to `control-plane-runs.json` (survives restarts; loaded on boot,
+  saved per run). **Every memory item is now a real link** to its GitHub commit / Etherscan block —
+  click-through is the proof it's live, not mocked. Full visual pass (page.ts): OP-accented top bar
+  with a live dot, connector cards w/ health dots, stat tiles (calls / avg latency / items stored),
+  two-column memory + run history with source badges + relative times, a run toast, and a 7s
+  auto-refresh. Still zero-dep (no framework/build). Verified: restart serves it, runs persist,
+  a re-run of GitHub shows 0 new / 47 dedup — durable real data, not a fixture.
+
+## 2026-06-25 — three more connectors (Slack, Notion, Monday) — the library pays off
+
+- Added Slack (Web API), Notion (search), Monday (GraphQL) as real connectors. The whole point: each
+  was just "implement fetch + declare schema" on the existing seam — central redacted auth, uniform
+  telemetry, registry/health, and the control plane all came for free (Phase C2 of the workplan).
+- Only n8n creds exist today, so they're built to **degrade honestly**: no token → healthcheck says
+  "no SLACK_TOKEN" (no network call, no log spam, `required:false` so no warn), fetch throws a clear
+  error. On the control plane page they render with **Run disabled + "needs credentials."** Targets
+  (Slack channel / Monday board) default from env so the generic Run works once keyed; Notion needs
+  only a token. All wired into a single `defaultRegistry()` the demo + control plane share.
+- Refactored the shared `FetchLike` into `connectors/http.ts`; unit-tested all three offline with
+  canned payloads (mapping + not-configured health). typecheck clean, **37 passed / 1 skipped**.
+- `registry.list()` now shows 5 sources (2 live zero-key, 3 token-gated) — the discoverability story.
+  When OP Labs hands over real Slack/Notion/Monday tokens, they light up with no new plumbing.
+
+## 2026-06-25 — a multi-source demo runthrough (mock, but honest)
+
+- User wants to show, in the demo, a Slack message + a Monday change + a Notion update flowing in.
+  No tokens yet → built it as **replay**: recorded fixtures (`src/connectors/fixtures.ts`) run through
+  the REAL connector mapping, grounding, dedup, shared memory, and control plane. Labeled "demo data"
+  everywhere (a red pill on the page, a line in every demo output). GitHub + onchain stay live. This
+  keeps the case study's "real tool calls" integrity — the *pipeline* is real, only 3 API payloads
+  are canned, and I say so.
+- `npm run scenario` (`./beacon scenario`): narrates the three events being ingested, then a single
+  semantic query answers ACROSS slack/monday/notion/github/onchain — the "one shared source of truth"
+  payoff. Also shows idempotent dedup on re-run (pain ①). `BEACON_FIXTURES=1 ./beacon up` runs the
+  control plane with all 5 sources healthy so they're clickable on the page.
+- Avoided a trap: our store dedups by id (no upsert), so I framed the events as NEW activity rather
+  than in-place edits, which the read-only + dedup model represents honestly. Tested the fixture
+  registry + mapping (`test/connectors/fixtures.test.ts`). typecheck clean, 39 passed / 1 skipped.
+
+## 2026-06-25 — one "Create Report" button → the executive summary on the platform
+
+- User: the page should have ONE "Create Report" button that fetches everything, shows loading,
+  updates the events, then writes the exec summary. We were ~70% there (connectors/run/memory/feed
+  existed); missing a "run all" action + the summary itself (which until now only lived in v0's n8n).
+- Built `src/agents/exec-summary/summary.ts` — the exec brief, now produced on v1 from MULTI-SOURCE
+  shared memory. Key trust property: the structured report is **grounded by construction** (every
+  bullet IS a real artifact with id+url — nothing to hallucinate). Provider-swappable like the
+  embeddings: `LocalSummarizer` (deterministic, zero-key, the default) vs `ClaudeSummarizer` (adds a
+  narrative over the same grounded sections when ANTHROPIC_API_KEY is set; the model never invents —
+  it only writes prose over real artifacts, and a failed call falls back to the grounded structure).
+- Two endpoints: `POST /api/run-all` (fetch every HEALTHY source) + `POST /api/report` (summarize
+  from memory); both persisted. Rewrote the page: replaced per-source Run buttons with one red
+  **Create Report** CTA that stages ① fetch → ② refresh feed → ③ summary, with a spinner + status.
+  Report renders as themed sections (Shipped/GTM/Deals/Docs/Onchain), each line a link to its source.
+- This closes a nice loop: v1's platform now produces the case study's headline workflow (the weekly
+  exec brief) from many sources, where v0 did it from one. Tested the report builder
+  (`test/agents/exec-summary.test.ts`). typecheck clean, **43 passed / 1 skipped**.
+
+## 2026-06-25 — onboarding: a Quickstart doc + in-app "Connect a service"
+
+- User: an onboarding flow in the docs (clone → running locally) + "really cool if users could
+  authenticate to their services once running locally."
+- **Auth choice:** full OAuth per service needs each user to register OAuth apps — wrong for a local
+  dev tool. The realistic "authenticate locally" for these APIs is paste-a-token, with a link to
+  where to get each. Built that; noted production evolves to OAuth + a vault behind the SAME registry.
+- **In-app connect:** a "+ Connect a service" modal in the control plane. Paste a token
+  (Slack/Notion/Monday/GitHub/Anthropic, each with a help link + the right fields) → `POST /api/connect`
+  → writes to a gitignored `v1-walk/.env` AND live-updates `process.env`, then re-probes health — the
+  source flips OK with no restart. Found+fixed a latent gap: the app never actually loaded `.env` —
+  added `src/core/env.ts` (loadEnv/upsertEnv), wired into the server + demos, so hand-editing works too.
+- **Security:** the server now binds `127.0.0.1` (it writes secrets); logs record only the var NAMES
+  set, never values; the modal states local-only/gitignored/prod-uses-a-vault. Verified: connecting a
+  fake Slack token re-probed REAL Slack → `invalid_auth` (proves it authenticates for real), `.env`
+  written, no token in logs. typecheck clean, **46 passed / 1 skipped**.
+- **Docs:** `docs/onboarding.html` (Quickstart) per the docs-site skill — clone → `./beacon up` →
+  connect services → Create Report, with a flow SVG + a per-service token table; added "Quickstart"
+  to the nav across all 6 pages.

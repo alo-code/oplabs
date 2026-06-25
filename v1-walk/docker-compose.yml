@@ -1,0 +1,21 @@
+# Shared memory substrate for v1 — Postgres + pgvector.
+#   npm run db:up     # start it; the migration in ./migrations applies on first boot
+#   export DATABASE_URL=postgres://beacon:beacon@localhost:5432/beacon
+#   npm run memory    # the demo will use Postgres instead of the in-memory store
+#   npm run db:down   # stop it
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: beacon
+      POSTGRES_PASSWORD: beacon
+      POSTGRES_DB: beacon
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U beacon"]
+      interval: 3s
+      timeout: 3s
+      retries: 10

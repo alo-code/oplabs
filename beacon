@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+#
+# beacon — repo-root dispatcher. Run or test ANY version from here, without cd-ing in.
+#
+#   ./beacon versions                 list the versions and what's runnable
+#   ./beacon test                     run every runnable version's test suite
+#   ./beacon status                   status of runnable versions
+#   ./beacon stop                     stop anything running (v1 control plane + Postgres)
+#
+#   ./beacon v0 <test|demo|onchain>                          crawl — n8n + tested TS trust core
+#   ./beacon v1 <start|stop|restart|status|demo|test|logs>   walk  — the platform (control plane)
+#   ./beacon v2 | v3 ...                                      design-only (points at the docs)
+#
+# Version aliases: v0=crawl, v1=walk, v2=run, v3=sprint.
+# Env PORT / BEACON_DB=1 (Postgres for v1) pass through to v1-walk/beacon.sh.
+#
+set -euo pipefail
+cd "$(dirname "$0")"
+
+usage() {
+  cat <<'EOF'
+beacon — run or test any version from the repo root
+
+  ./beacon up                        run v1 fully locally: Postgres+pgvector + control plane
+  ./beacon down                      stop the local stack (control plane + Postgres)
+  ./beacon scenario                  multi-source demo runthrough (Slack/Notion/Monday + GitHub/onchain)
+  ./beacon versions                  list versions + runnable state
+  ./beacon test                      run every runnable version's tests
+  ./beacon status                    status of runnable versions
+  ./beacon stop                      stop the v1 control plane (leaves Postgres up)
+
+  ./beacon v0 <cmd>   crawl  — cmd: test | demo | onchain
+  ./beacon v1 <cmd>   walk   — cmd: start | stop | restart | status | demo | test | logs
+  ./beacon v2 ...     run    — design-only (see v2-run/docs)
+  ./beacon v3 ...     sprint — design-only (see v3-sprint/docs)
+
+env: PORT, BEACON_DB=1 (Postgres for v1) — passed through to v1-walk/beacon.sh
+EOF
+}
+
+run_v0() {
+  [ -d v0-crawl/node_modules ] || ( echo "→ installing deps in v0-crawl…"; cd v0-crawl && npm install )
+  case "${1:-help}" in
+    test)    ( cd v0-crawl && npm test ) ;;
+    demo)    ( cd v0-crawl && npm run demo ) ;;
+    onchain) ( cd v0-crawl && npm run onchain ) ;;
+    help)    echo "v0 (crawl) — the exec-brief trust core. cmd: test | demo | onchain" ;;
+    *)       echo "v0: unknown command '$1' (try: test | demo | onchain)"; exit 1 ;;
+  esac
+}
+
+run_v1() { ./v1-walk/beacon.sh "${@:-status}"; }
+
+design_only() { echo "• $1 is design-only (no runnable code yet) — see $1/docs and $1/README.md"; }
+
+case "${1:-help}" in
+  help|-h|--help) usage ;;
+  up)     export BEACON_DB=1; run_v1 restart ;;  # Postgres up (idempotent) + server freshly on it
+  down)   export BEACON_DB=1; run_v1 stop ;;     # stop control plane AND Postgres
+  scenario) run_v1 scenario ;;                   # the multi-source demo runthrough
+  versions)
+    echo "v0  crawl   runnable   n8n workflow + tested TS trust core      ./beacon v0 test|demo|onchain"
+    echo "v1  walk    runnable   platform: connectors · memory · console  ./beacon v1 start"
+    echo "v2  run     design     org-wide & governed                      see v2-run/docs"
+    echo "v3  sprint  design     internal MCP (ambient access)            see v3-sprint/docs"
+    ;;
+  test)
+    rc=0
+    echo "=====================  v0-crawl  ====================="; run_v0 test || rc=1
+    echo; echo "=====================  v1-walk  ====================="; run_v1 test || rc=1
+    echo; [ $rc -eq 0 ] && echo "✓ all version test suites passed" || echo "✗ a version's tests failed"
+    exit $rc
+    ;;
+  status) run_v1 status ;;
+  stop)   run_v1 stop ;;
+  v0|crawl)  shift; run_v0 "${1:-help}" ;;
+  v1|walk)   shift; run_v1 "$@" ;;
+  v2|run)    design_only "v2-run" ;;
+  v3|sprint) design_only "v3-sprint" ;;
+  *) echo "unknown command: ${1:-}"; echo; usage; exit 1 ;;
+esac

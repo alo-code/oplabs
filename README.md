@@ -39,6 +39,30 @@ The crawl → walk → run → sprint plan isn't just described — it's **four 
 Each version is its own self-contained project; `v1-walk/`, `v2-run/`, and `v3-sprint/` are
 scaffolded **code-ready** for when they're built.
 
+## Run any version from the repo root
+
+**New here?** The **[Quickstart](docs/onboarding.html)** walks clone → `./beacon up` → authenticate
+your own Slack/Notion/Monday from the running app → Create Report.
+
+One dispatcher, `./beacon`, runs or tests any version without `cd`-ing in:
+
+```bash
+./beacon versions      # what each version is + what's runnable
+./beacon test          # run every runnable version's test suite (v0 + v1)
+./beacon v0 demo       # the trust gate (crawl) — no keys
+./beacon v0 onchain    # a real, read-only OP Mainnet read
+./beacon v1 start      # the walk platform → http://localhost:7878  (then ./beacon stop)
+./beacon v1 demo       # connectors + shared-memory demos (real calls, zero keys)
+
+# run v1 fully locally on the real substrate (needs Docker running):
+./beacon up            # Postgres+pgvector + control plane on it → http://localhost:7878
+./beacon down          # stop the control plane AND Postgres
+```
+
+It delegates to each version's own runner (e.g. `v1-walk/beacon.sh`, which manages the control-plane
+lifecycle: `start|stop|restart|status|demo|test|logs`, plus `BEACON_DB=1` for Postgres). `v2`/`v3`
+are design-only and say so.
+
 ## Run the working slice (`v0-crawl/`)
 
 ```bash
