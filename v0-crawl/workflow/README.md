@@ -1,9 +1,18 @@
 # v0-crawl workflow — the weekly exec brief (n8n)
 
 This is the orchestration for v0: a scheduled n8n workflow that fetches real activity
-from up to five sources, asks Claude for one **grounded** brief, runs it through the
+from the case-study sources, asks Claude for one **grounded** brief, runs it through the
 **trust gate**, and (only if it passes) renders **two framings** — an eng digest and a
 BD "what shipped & why it matters" — to two Slack channels.
+
+**Sources** — wired now: **GitHub** (commits, multi-repo across the OP Labs org),
+**Notion**, **Slack** (one curated channel, read), **Google Drive** (one folder). Stubbed
+and one step from on: **Calendar**, **HubSpot**. GitHub stays on an HTTP node (the native
+GitHub node has no commits/PRs operation); Slack/Notion/Drive/Calendar/HubSpot are n8n's
+**native connectors**, so "connecting" a source is an OAuth click (or one token paste),
+not a hand-built request. Every source normalizes to one `{ kind, source, id, url, label }`
+shape, so the trust gate never changes when you add one — a new source just enlarges the
+citable pool.
 
 ## What's verified vs. what you finish
 
@@ -34,19 +43,25 @@ BD "what shipped & why it matters" — to two Slack channels.
 
 **2. Paste the four Code nodes** from the `.js` files above. (They `throw` until you do.)
 
-**3. Add credentials** (n8n → Credentials; never commit these):
-- **GitHub** — Header Auth credential named so the header is `Authorization: Bearer <read-only PAT>`. Attach to *GitHub: commits*.
-- **Anthropic** — Header Auth with header `x-api-key: <key>`. Attach to *Claude: summarize*.
-- **Slack** — a Slack Bot token (scopes: `chat:write`, plus `channels:read`/`groups:read`); the bot must be invited to `#eng-updates`, `#gtm-shipped`, `#beacon-ops`. Attach to the three Slack nodes.
-- (Later, per source you enable) Monday / Notion / Slack-read / Google Drive.
+**3. Add credentials** (n8n → Credentials; never commit these). Each source node ships
+with a `REPLACE_*` credential reference — open the node, pick/create the credential, save.
+- **GitHub** *(HTTP, Header Auth)* — name it so the header is `Authorization: Bearer <read-only PAT>`. Attach to *GitHub: commits*. Public repos work with any read PAT.
+- **Anthropic** *(HTTP, Header Auth)* — header `x-api-key: <key>`. Attach to *Claude: summarize*.
+- **Slack** *(native, one OAuth2 connection for read **and** post)* — create a **Slack OAuth2 API** credential and authorize it; scopes must cover `channels:history` (+ `groups:history` for private channels) for the read, and `chat:write` (+ `channels:read`) for the posts. Attach the **same** credential to all four Slack nodes (*Slack: #releases*, *Post → #eng-updates*, *Post → #gtm-shipped*, *Held: notify ops*). The app/bot must be a member of the channel it reads and the three it posts to (`#eng-updates`, `#gtm-shipped`, `#beacon-ops`).
+- **Notion** *(native)* — create a **Notion API** credential = an internal integration token, then **share the target database with that integration** (Notion → database → ••• → Connections). Attach to *Notion: pages*.
+- **Google Drive** *(native, OAuth2)* — create a **Google Drive OAuth2 API** credential and authorize it (read scope is enough). Attach to *Drive: folder*.
 
 **4. Paste the Claude system prompt** into *Claude: summarize* (the node body references it; full text below).
 
-**5. Set targets:**
-- Env `GITHUB_REPO` (default `ethereum-optimism/optimism`) and `ANTHROPIC_MODEL` (default `claude-sonnet-4-6`).
-- Output channels in `render-eng.js` / `render-bd.js` (`#eng-updates`, `#gtm-shipped`) and the held channel (`#beacon-ops`).
+**5. Set targets** (Settings → **Variables/Env**, or your n8n env — no ids are baked into the JSON):
+- `GITHUB_REPOS` — comma-separated `owner/repo` list, e.g. `ethereum-optimism/optimism,ethereum-optimism/op-geth` (default: the OP Stack monorepo). The *GitHub: repos* node fans these out so *GitHub: commits* runs once per repo.
+- `NOTION_DATABASE_ID` — the database the integration can see.
+- `SLACK_CHANNEL_ID` — the one channel to read (e.g. `#releases`). Also set `SLACK_WORKSPACE` (your `*.slack.com` subdomain) so `build-activity.js` can build clickable message permalinks.
+- `GDRIVE_FOLDER_ID` — the one folder to scan.
+- `ANTHROPIC_MODEL` (default `claude-sonnet-4-6`).
+- Output channels live in `render-eng.js` / `render-bd.js` (`#eng-updates`, `#gtm-shipped`) and the held channel is in *Held: notify ops* (`#beacon-ops`).
 
-**6. Run now:** click **Test workflow**. GitHub-only works immediately (public repo + your token). Enable the other sources as their credentials come online — the workflow **degrades gracefully** (a source with nothing just adds nothing).
+**6. Run now:** click **Test workflow**. Each wired source contributes independently and every source node is set to **continue on error**, so the workflow **degrades gracefully** — a source you haven't connected yet (or one with nothing in the window) just adds nothing; it never fails the run. Tip: while a source is still unconnected, you can simply **disable that node** to keep the run clean.
 
 ## What you should see
 - **Gate passes** → a post in `#eng-updates` (technical) and `#gtm-shipped` (BD), every bullet citing a real artifact.
@@ -78,24 +93,31 @@ Rules:
 ## How it works
 
 ```
-Schedule → [GitHub · Monday · Notion · Slack(1ch) · Drive] → Build activity
-         → Claude (grounded brief) → Trust gate ──pass?──┬─ yes → Render eng → #eng-updates
-                                                         │              └ Render BD → #gtm-shipped
-                                                         └─ no → Held: notify #beacon-ops
+Schedule → [GitHub(n repos) · Notion · Slack(1ch) · Drive]  → Build activity
+           (+ Calendar · HubSpot stubs, one click from on)   → Claude (grounded brief)
+         → Trust gate ──pass?──┬─ yes → Render eng → #eng-updates
+                               │              └ Render BD → #gtm-shipped
+                               └─ no → Held: notify #beacon-ops
 ```
 One grounded brief, one gate, two framings. The trust gate is the tested core; everything
 else is fetch/summarize/deliver that n8n's nodes handle.
 
-## Enabling the other four sources
-Each is a disabled HTTP node in the graph. To turn one on: add its credential, set its query
-(window + the one channel/folder/board/db you're scoping to), enable the node, and add its
-mapper to `build-activity.js` (shapes are noted inline there). Grounding/evals don't change —
-they key off `id`/`url`, so a new source just enlarges the citable pool.
+## Enabling a stub (Calendar, HubSpot)
+Both ship as **disabled native nodes** that aren't yet wired into the graph (so they can't
+inject passthrough items while off). To turn one on: add its credential, set its target,
+**enable** the node, and **connect its output into *Build activity*** (drag the wire).
+`build-activity.js` already has their mappers, and grounding/evals don't change — they key
+off `id`/`url`, so a new source just enlarges the citable pool.
 
 ## Troubleshooting
-- **A Code node throws "not configured"** → you haven't pasted its `.js` yet.
-- **Node version mismatch on import** → n8n may upgrade a node; re-select the node type if a
-  parameter looks empty. Types used: `scheduleTrigger`, `httpRequest`, `code`, `if`, `slack`.
+- **A Code node throws "not configured"** → you haven't pasted its `.js` yet (Build activity / Trust gate / Render eng / Render BD).
+- **Node version mismatch on import** → n8n may upgrade a node; re-open the node and re-pick the
+  resource/operation if a parameter looks empty. Native node types used: `slack`, `notion`,
+  `googleDrive`, `googleCalendar`, `hubspot` (plus `scheduleTrigger`, `httpRequest`, `code`, `if`).
+- **A native node param reads empty after import** → re-select it from the dropdown; the value
+  (e.g. an `$env` resource-locator) re-binds. The targets are env-driven, so confirm `GITHUB_REPOS` / `NOTION_DATABASE_ID` / `SLACK_CHANNEL_ID` / `GDRIVE_FOLDER_ID` are set.
+- **Notion returns nothing** → the integration isn't shared with the database (Notion → ••• → Connections), or `NOTION_DATABASE_ID` is wrong.
+- **Slack read returns nothing / not_in_channel** → invite the app to that channel; check `channels:history` scope and `SLACK_CHANNEL_ID`.
 - **GitHub returns one item with an array** → ensure *GitHub: commits* splits the response into
   items (Settings → "Split Into Items"), or the loop in `build-activity.js` will only see one.
 - **Claude output won't parse** → the trust node extracts the first `{…}` block from the model

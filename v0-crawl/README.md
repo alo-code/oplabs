@@ -9,12 +9,16 @@ The weekly **exec brief**, built as an **n8n.cloud workflow** with a small,
 **tested TypeScript trust core**:
 
 ```
-n8n.cloud:  Schedule(cron) → HTTP→5 sources (GitHub, Monday, Notion, Slack, Drive)
+n8n.cloud:  Schedule(cron) → sources (GitHub multi-repo · Notion · Slack · Drive;
+                              Calendar + HubSpot stubs) → Build activity [normalize]
             → HTTP→Claude (grounded summary) → Code node [trust]
             → two renders: eng + BD → Slack/email      (run history = telemetry)
                                     │
 src/trust/  ◄── source of truth, mirrored into the Code node ──┘
 ```
+Sources use n8n's **native connectors** (Slack/Notion/Drive/Calendar/HubSpot — OAuth or a
+token paste); GitHub uses an HTTP node (the native GitHub node has no commits/PRs operation)
+and fans out across the OP Labs repos. See `workflow/README.md` for the per-source setup.
 
 Choosing n8n is deliberate: it removes three of the six pains *by construction* —
 always-on (its scheduler, not a laptop), observability (its run history), and
@@ -31,7 +35,7 @@ eval-checked against speculative impact, so eng-derived claims are safe for BD t
 ## Layout
 
 - `workflow/exec-brief.json` — the n8n workflow export (import into n8n.cloud).
-- `src/trust/grounding.ts` — every brief bullet must cite a real artifact (any source: GitHub / Monday / Notion / Slack / Drive) present in the fetched activity.
+- `src/trust/grounding.ts` — every brief bullet must cite a real artifact (any source: GitHub / Notion / Slack / Drive / Calendar / HubSpot) present in the fetched activity.
 - `src/trust/evals.ts` — structure + 100%-grounded + word-band + no-speculative-impact → an `eval_score`.
 - `test/` — vitest: a known-bad (ungrounded) brief → red; a grounded one → green.
 - `evidence/` — a real run on real repo data (brief + eval score + cost).
