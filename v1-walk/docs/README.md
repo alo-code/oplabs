@@ -29,12 +29,16 @@ The two design docs predate the build; these landed too and have evidence under 
 
 ## What's next (toward Run / v2)
 
-✅ Done: **trust-as-a-service** (the exec summary is now eval-gated — `src/trust/gate.ts`) and
-**connector resilience** (bounded retry + rate-limit — `src/connectors/resilience.ts`). Remaining:
+✅ **All five hardening steps shipped:** trust-as-a-service (`src/trust/gate.ts`), connector resilience
+(`src/connectors/resilience.ts`), **memory governance** (PII redaction + TTL — `src/memory/policy.ts`),
+**scheduling** (always-on — `src/orchestrator/scheduler.ts`), and the **OTLP exporter** (opt-in —
+`src/observability/otlp.ts`). Evidence: `../evidence/always-on-governance/`, `../evidence/trust-gate/`.
 
-1. **Memory governance** — retention/TTL + PII redaction hooks (M3.3) — the Security/Legal seam.
-2. **Scheduling** — the brief on a cron, not a button (the "always-on" half; v0 has it via n8n).
-3. **Observability backend** — wire the OTLP exporter behind the facade (per ADR 0003).
+Toward **Run (v2)** proper:
+1. **Self-serve workflow creation** for non-engineers (compose connectors + prompts behind guardrails).
+2. **Governance at scale** — per-workflow budgets, RBAC, audit log, data-residency policy (extends the
+   PII/redaction seam); the OTLP destination chosen with stakeholders (ADR 0003).
+3. **A second full workflow** (prospect intel — highest survey demand) on the same machinery.
 4. *(stretch)* extract the trust gate to a standalone HTTP **trust service** every workflow calls.
 
 The signals that justify *starting* Walk — and moving on to Run — are on the

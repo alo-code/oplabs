@@ -32,17 +32,22 @@ The crawl → walk → run → sprint plan isn't just described — it's **four 
 | Dir | Stage | State | What's in it |
 |---|---|---|---|
 | **`v0-crawl/`** | MVP — one workflow, trusted | **Runs today** | The weekly exec brief: an **n8n.cloud workflow** + a **tested TS trust core** (real GitHub + Claude calls, not mocked) |
-| **`v1-walk/`** | The platform | Design-only (code later) | Connector library, shared memory, control plane — where we outgrow no-code |
-| **`v2-run/`** | Org-wide, governed | Design-only (code later) | Self-serve, governance, reliability, polyglot, onchain seam |
-| **`v3-sprint/`** | The vision | Design-only (code later) | Internal **MCP server** — ambient, grounded, governed access to company memory from any AI tool |
+| **`v1-walk/`** | The platform | **Runs today** | Real TS: connector library (5 sources), shared memory (Postgres+pgvector), a **trust-gated** exec brief + control plane — `./beacon demo` |
+| **`v2-run/`** | Org-wide, governed | Design-only | Self-serve, governance, reliability, polyglot, onchain seam |
+| **`v3-sprint/`** | The vision | Design-only | Internal **MCP server** — ambient, grounded, governed access to company memory from any AI tool |
 
-Each version is its own self-contained project; `v1-walk/`, `v2-run/`, and `v3-sprint/` are
-scaffolded **code-ready** for when they're built.
+Each version is its own self-contained project. `v0-crawl/` and `v1-walk/` **run today**; `v2-run/`
+and `v3-sprint/` are scaffolded **code-ready** for when they're built.
 
 ## Run any version from the repo root
 
-**New here?** The **[Quickstart](docs/onboarding.html)** walks clone → `./beacon up` → authenticate
-your own Slack/Notion/Monday from the running app → Create Report.
+**Fastest way to see it (any laptop, no Docker, no keys):**
+```bash
+./beacon demo     # v1 control plane with demo data + a live schedule → http://localhost:7878
+```
+Open the URL, click **Create Report** (it also re-runs on a schedule on its own), then `./beacon down`.
+For the full real-substrate run (Postgres + pgvector): `./beacon up`. New here? The
+**[Quickstart](docs/onboarding.html)** walks clone → run → connect your own services → report.
 
 One dispatcher, `./beacon`, runs or tests any version without `cd`-ing in:
 
@@ -80,8 +85,8 @@ credentials, and Run-now. Details in **`v0-crawl/README.md`**.
 
 ```
 docs/        approach doc — navigable HTML + diagrams → GitHub Pages (oplabs.daciasec.net)
-v0-crawl/    the runnable version (n8n workflow + tested TS trust core)
-v1-walk/     design-only — the platform (connectors, memory, control plane), code-ready
+v0-crawl/    runs today — the n8n workflow + a tested TS trust core
+v1-walk/     runs today — the platform in TS (connectors · shared memory · trust gate · control plane)
 v2-run/      design-only — org-wide & governed (self-serve, governance, polyglot, onchain), code-ready
 v3-sprint/   design-only — the vision (internal MCP for ambient, governed company-memory access), code-ready
 skills/      AI-driven-development playbooks (shared across versions)

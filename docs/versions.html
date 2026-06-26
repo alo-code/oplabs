@@ -25,13 +25,13 @@
   <h1>The four versions — design, stack &amp; architecture</h1>
   <p class="sub lede">The crawl → walk → run → sprint plan is four directories
   (<code>v0-crawl</code> → <code>v1-walk</code> → <code>v2-run</code> → <code>v3-sprint</code>),
-  so the line of thinking is browsable. <b>v0 runs today</b>; v1–v3 are design-led, scaffolded
-  code-ready. In the diagrams, <b>solid = built</b>, <b>dashed = design-only</b>.</p>
+  so the line of thinking is browsable. <b>v0 and v1 run today</b>; v2–v3 are design-led, scaffolded
+  code-ready. In the diagrams, <b>solid = built</b>, <b>dashed = planned</b>.</p>
 
   <table>
     <tr><th>Version</th><th>Stage</th><th>State</th><th>Stack in one line</th></tr>
     <tr><td><code>v0-crawl</code></td><td>MVP — one workflow, trusted</td><td><b>Runs today</b></td><td>n8n.cloud + a tested TypeScript trust core</td></tr>
-    <tr><td><code>v1-walk</code></td><td>The platform</td><td>Design-only</td><td>TS services · Postgres+pgvector · connector library · control-plane UI</td></tr>
+    <tr><td><code>v1-walk</code></td><td>The platform</td><td><b>Runs today</b></td><td>TS services · Postgres+pgvector · connector library · trust gate · control-plane UI</td></tr>
     <tr><td><code>v2-run</code></td><td>Org-wide, governed</td><td>Design-only</td><td>Self-serve + governance + multi-provider + onchain seam</td></tr>
     <tr><td><code>v3-sprint</code></td><td>The vision</td><td>Design-only</td><td>Internal MCP server — ambient, grounded, governed access from any AI tool</td></tr>
   </table>
@@ -57,7 +57,7 @@
     <tr><td>Orchestration</td><td>n8n.cloud (no-code)</td><td>n8n + a TS service layer</td><td>+ policy engine, multi-provider routing</td><td>+ MCP server over the platform</td></tr>
     <tr><td>Memory</td><td>none (stateless per run)</td><td>Postgres + pgvector (shared)</td><td>governed, multi-tenant</td><td>same store, queried live in NL</td></tr>
     <tr><td>Auth</td><td>per-workflow n8n creds</td><td>central OAuth / secret store</td><td>access-controlled + audited</td><td>per-user identity + audit on every call</td></tr>
-    <tr><td>State today</td><td><b>runs</b></td><td>design-only</td><td>design-only</td><td>design-only</td></tr>
+    <tr><td>State today</td><td><b>runs</b></td><td><b>runs</b></td><td>design-only</td><td>design-only</td></tr>
   </table>
 
   <h3>The through-line: trust is the constant</h3>
@@ -151,31 +151,31 @@
   </ul>
 
   <!-- ============================ v1-walk ============================ -->
-  <h2>v1-walk — the platform (design-only)</h2>
-  <h3>Design</h3>
+  <h2>v1-walk — the platform (runs today)</h2>
+  <h3>Built</h3>
   <p>Crawl proves one workflow with n8n. Walk is where we <b>outgrow no-code</b>: the 2nd and
   3rd workflow shouldn't each re-solve auth, memory, and trust. The one-off becomes reusable
   infrastructure — a connector library, shared memory, the trust core as a service, a control
   plane — so the next workflow costs days, not weeks.</p>
 
-  <h3>Tech stack (planned)</h3>
+  <h3>Tech stack (built)</h3>
   <table>
     <tr><th>Layer</th><th>Choice</th></tr>
-    <tr><td>Connectors</td><td>TypeScript connector library, MCP-shaped, with a central OAuth / secret store (kills per-workflow manual auth)</td></tr>
-    <tr><td>Shared memory</td><td><b>Postgres + pgvector</b> — structured facts + semantic recall, dedup; same interface the crawl file-store implied</td></tr>
-    <tr><td>Orchestration</td><td>n8n for visual workflows + a TS service layer for queues, retries, per-run isolation</td></tr>
-    <tr><td>Trust</td><td>the v0 trust core promoted to one shared HTTP service every workflow calls</td></tr>
-    <tr><td>Control plane</td><td>a web UI (React/Next.js) — trigger, run history, and output across all workflows</td></tr>
-    <tr><td>Observability</td><td>OpenTelemetry + a dashboard; cost/quality SLOs per workflow</td></tr>
-    <tr><td>Model</td><td>provider-swappable interface (Claude default; Gemini/OpenAI)</td></tr>
+    <tr><td>Connectors</td><td>TypeScript connector library (GitHub · onchain · Slack · Notion · Monday) with a central, redacted credential registry + bounded retry/rate-limit</td></tr>
+    <tr><td>Shared memory</td><td><b>Postgres + pgvector</b> — structured facts + semantic recall, dedup; PII redaction + TTL at write time</td></tr>
+    <tr><td>Orchestration</td><td>a TS control plane + a scheduler (always-on, <code>BEACON_SCHEDULE</code>); queues / per-run isolation are the Run-stage fill-out</td></tr>
+    <tr><td>Trust</td><td>the v0 grounding + eval gate ported in — Create Report is <b>held, not published</b> on a violation</td></tr>
+    <tr><td>Control plane</td><td>a zero-dependency page (<code>node:http</code> + one HTML file) — Create Report, connector health, run history, metrics, in-app auth</td></tr>
+    <tr><td>Observability</td><td>an in-house metrics/log facade + opt-in OTLP export (ADR 0003); cost/quality signals per run</td></tr>
+    <tr><td>Model</td><td>provider-swappable (Claude narrative when keyed; grounded + deterministic otherwise)</td></tr>
   </table>
 
   <h3>Architecture</h3>
   <figure>
-    <svg class="dgm" viewBox="0 0 880 430" role="img" aria-label="v1-walk: the platform (design-only)">
+    <svg class="dgm" viewBox="0 0 880 430" role="img" aria-label="v1-walk: the platform (built)">
       <defs><marker id="v1a" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path class="d-arrow" d="M0,0 L9,4.5 L0,9 Z"/></marker></defs>
 
-      <rect class="d-box ghost" x="20" y="40" width="686" height="44" rx="10"/>
+      <rect class="d-box" x="20" y="40" width="686" height="44" rx="10"/>
       <text class="d-title" x="363" y="60" text-anchor="middle" font-size="13">Control plane — for non-engineers</text>
       <text class="d-label" x="363" y="76" text-anchor="middle" font-size="11">trigger · schedule · run history · output, across all workflows</text>
 
@@ -185,7 +185,7 @@
 
       <text class="d-eyebrow" x="20" y="166" font-size="10.5">AGENTS (WORKFLOWS)</text>
       <g font-size="12">
-        <rect class="d-box ghost" x="20" y="172" width="162.5" height="52" rx="9"/><text class="d-title" x="101" y="202" text-anchor="middle">exec-brief</text>
+        <rect class="d-box" x="20" y="172" width="162.5" height="52" rx="9"/><text class="d-title" x="101" y="202" text-anchor="middle">exec-brief</text>
         <rect class="d-box ghost" x="194.5" y="172" width="162.5" height="52" rx="9"/><text class="d-title" x="275" y="202" text-anchor="middle">prospect intel</text>
         <rect class="d-box ghost" x="369" y="172" width="162.5" height="52" rx="9"/><text class="d-title" x="450" y="202" text-anchor="middle">deal log</text>
         <rect class="d-box ghost" x="543.5" y="172" width="162.5" height="52" rx="9"/><text class="d-title" x="624" y="202" text-anchor="middle">Q&amp;A</text>
@@ -193,13 +193,13 @@
 
       <text class="d-eyebrow" x="20" y="244" font-size="10.5">SHARED PLATFORM SERVICES</text>
       <g font-size="12">
-        <rect class="d-box ghost" x="20" y="250" width="162.5" height="54" rx="9"/><text class="d-title" x="101" y="273" text-anchor="middle">Connectors</text><text class="d-label" x="101" y="290" text-anchor="middle" font-size="10.5">central auth</text>
-        <rect class="d-box ghost" x="194.5" y="250" width="162.5" height="54" rx="9"/><text class="d-title" x="275" y="273" text-anchor="middle">Memory</text><text class="d-label" x="275" y="290" text-anchor="middle" font-size="10.5">Postgres + pgvector</text>
-        <rect class="d-box ghost" x="369" y="250" width="162.5" height="54" rx="9"/><text class="d-title" x="450" y="273" text-anchor="middle">Model</text><text class="d-label" x="450" y="290" text-anchor="middle" font-size="10.5">swappable</text>
-        <rect class="d-box ghost" x="543.5" y="250" width="162.5" height="54" rx="9"/><text class="d-title" x="624" y="273" text-anchor="middle">Trust</text><text class="d-label" x="624" y="290" text-anchor="middle" font-size="10.5">as a service</text>
+        <rect class="d-box" x="20" y="250" width="162.5" height="54" rx="9"/><text class="d-title" x="101" y="273" text-anchor="middle">Connectors</text><text class="d-label" x="101" y="290" text-anchor="middle" font-size="10.5">central auth</text>
+        <rect class="d-box" x="194.5" y="250" width="162.5" height="54" rx="9"/><text class="d-title" x="275" y="273" text-anchor="middle">Memory</text><text class="d-label" x="275" y="290" text-anchor="middle" font-size="10.5">Postgres + pgvector</text>
+        <rect class="d-box" x="369" y="250" width="162.5" height="54" rx="9"/><text class="d-title" x="450" y="273" text-anchor="middle">Model</text><text class="d-label" x="450" y="290" text-anchor="middle" font-size="10.5">swappable</text>
+        <rect class="d-box" x="543.5" y="250" width="162.5" height="54" rx="9"/><text class="d-title" x="624" y="273" text-anchor="middle">Trust</text><text class="d-label" x="624" y="290" text-anchor="middle" font-size="10.5">gate-before-publish</text>
       </g>
 
-      <rect class="d-box ghost" x="726" y="40" width="134" height="264" rx="10"/>
+      <rect class="d-box" x="726" y="40" width="134" height="264" rx="10"/>
       <text class="d-title" x="793" y="66" text-anchor="middle" font-size="12.5">Observability</text>
       <text class="d-label" x="793" y="92" text-anchor="middle" font-size="11">runs · cost</text>
       <text class="d-label" x="793" y="112" text-anchor="middle" font-size="11">latency</text>
@@ -215,8 +215,8 @@
         <rect class="d-box ghost" x="262.3" y="354" width="113.1" height="38" rx="8"/><text class="d-title" x="318" y="378" text-anchor="middle">Notion</text>
         <rect class="d-box ghost" x="383.4" y="354" width="113.1" height="38" rx="8"/><text class="d-title" x="440" y="378" text-anchor="middle">Drive</text>
         <rect class="d-box ghost" x="504.5" y="354" width="113.1" height="38" rx="8"/><text class="d-title" x="561" y="378" text-anchor="middle">Calendar</text>
-        <rect class="d-box ghost" x="625.7" y="354" width="113.1" height="38" rx="8"/><text class="d-title" x="682" y="378" text-anchor="middle">GitHub</text>
-        <rect class="d-box ghost" x="746.8" y="354" width="113.1" height="38" rx="8"/><text class="d-title" x="803" y="378" text-anchor="middle">onchain</text>
+        <rect class="d-box" x="625.7" y="354" width="113.1" height="38" rx="8"/><text class="d-title" x="682" y="378" text-anchor="middle">GitHub</text>
+        <rect class="d-box" x="746.8" y="354" width="113.1" height="38" rx="8"/><text class="d-title" x="803" y="378" text-anchor="middle">onchain</text>
       </g>
 
       <line class="d-flow thin" x1="363" y1="84" x2="363" y2="101" marker-end="url(#v1a)"/>
@@ -224,7 +224,7 @@
       <line class="d-flow thin" x1="363" y1="224" x2="363" y2="249" marker-end="url(#v1a)"/>
       <line class="d-flow thin" x1="363" y1="304" x2="363" y2="353" marker-end="url(#v1a)"/>
     </svg>
-    <figcaption>Design-only (dashed = planned). The same seams as crawl, promoted into shared services: one workflow becomes a platform where the 2nd and 3rd rent connectors, memory, and trust instead of rebuilding them.</figcaption>
+    <figcaption><b>Built today</b> (solid): the control plane, connector library, shared memory, trust gate, observability, the exec brief, and the GitHub + onchain sources — run <code>./beacon demo</code>. Dashed = the planned fill-out (more agents + sources, the full orchestrator service). The same seams as crawl, promoted into shared services: the 2nd and 3rd workflow rent connectors, memory, and trust instead of rebuilding them.</figcaption>
   </figure>
 
   <h3>What's next to build</h3>

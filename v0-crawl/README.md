@@ -1,7 +1,7 @@
 # v0-crawl — the runnable version
 
-**Stage:** Crawl — the first version that earns trust. **This is the only version
-that runs today** (`../v1-walk/` and `../v2-run/` are design-only — see their READMEs).
+**Stage:** Crawl — the first version that earns trust (an n8n workflow + a tested TS trust core).
+`../v1-walk/` is the runnable TS **platform**; `../v2-run/` is design-only — see their READMEs.
 
 ## What it is
 
@@ -45,5 +45,6 @@ cd v0-crawl && npm install && npm test
 **The full workflow:** import `workflow/exec-brief.json` into n8n.cloud, set the
 GitHub + Anthropic credentials, and Run-now (or wait for the schedule).
 
-> **Status:** scaffolded. The trust module, the workflow export, and the evidence
-> land via the cadence (`../CADENCE.md`); tracked in `../todo/`.
+> **Status:** the trust core (grounding + evals) is built + tested; `npm run demo` and
+> `npm run onchain` run on a fresh clone (no keys). The full exec brief runs as the n8n workflow in
+> `workflow/`; the real run needs your n8n.cloud + credentials. Evidence under `evidence/`.

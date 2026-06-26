@@ -230,9 +230,9 @@ as the contract and the consuming code as a later green.
   - **Write-through** + a proven **cross-process read** (the control-plane process and the demo both
     read/write one Postgres) — the M3.2 "shared memory" payoff, made concrete.
 - **Descoped / deferred:**
-  - **M3.3 retention + PII hooks** (per-source TTL, field redaction, metadata-vs-body policy) — NOT
-    built. This is the Security/Legal seam and the most important governance follow-up before real
-    bodies are stored.
+  - **M3.3 retention + PII hooks** — ✅ now shipped as `src/memory/policy.ts` (`PolicyStore` decorator):
+    **PII redaction at write time** (emails / phones / secrets, flagged + shown in the feed) and an
+    **optional TTL** on recall (`BEACON_MEMORY_TTL`). Deferred: per-source policy + metadata-vs-body rules.
   - **M2.3 hybrid recall** (structured filter + semantic rank in one call) — basic structured and
     semantic recall shipped; combined ranking deferred.
   - **Embedding cost guard** (dedup embeddings by content hash) — moot for the free local embedder;

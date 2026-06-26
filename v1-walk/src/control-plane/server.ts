@@ -12,11 +12,14 @@ import { defaultRegistry } from "../connectors/registry-default";
 import { fixtureRegistry } from "../connectors/fixtures";
 import { InMemoryStore } from "../memory/inmemory";
 import { PostgresStore } from "../memory/postgres";
+import { PolicyStore } from "../memory/policy";
 import type { MemoryStore } from "../memory/store";
 import { metrics, logger } from "../observability/telemetry";
 import { executeRun, type RunSummary } from "./run";
 import { pickSummarizer, type Report } from "../agents/exec-summary/summary";
 import { gateReport, type TrustVerdict } from "../trust/gate";
+import { parseInterval, startScheduler, type SchedulerState } from "../orchestrator/scheduler";
+import { startOtlpExport } from "../observability/otlp";
 import { loadEnv, upsertEnv } from "../core/env";
 import { serviceBySource, envVarsFor } from "../core/services";
 import { PAGE } from "./page";
@@ -28,9 +31,11 @@ const ENV_FILE = ".env";
 
 const fixtures = !!process.env.BEACON_FIXTURES; // demo mode: Slack/Notion/Monday replay fixtures
 const registry = fixtures ? fixtureRegistry() : defaultRegistry();
-const store: MemoryStore = process.env.DATABASE_URL
-  ? new PostgresStore({ connectionString: process.env.DATABASE_URL })
-  : new InMemoryStore();
+// Governance: every write goes through the policy (PII redaction; optional TTL via BEACON_MEMORY_TTL).
+const store: MemoryStore = new PolicyStore(
+  process.env.DATABASE_URL ? new PostgresStore({ connectionString: process.env.DATABASE_URL }) : new InMemoryStore(),
+  { ttlMs: parseInterval(process.env.BEACON_MEMORY_TTL) ?? undefined },
+);
 const backend = process.env.DATABASE_URL ? "postgres+pgvector" : "in-memory";
 
 // Run history persists to a small file so it survives a server restart (e.g. `./beacon up`),
@@ -76,6 +81,38 @@ function defaultParams(name: string): unknown {
   if (name === "github") return { repo: process.env.GITHUB_REPOS?.split(",")[0]?.trim() || "ethereum-optimism/optimism", days: 7 };
   if (name === "onchain") return { blocks: 3 };
   return {}; // slack/notion/monday self-configure their target from env
+}
+
+let schedulerState: SchedulerState | null = null;
+
+// Shared by the Create Report button AND the scheduler, so a click and a tick do exactly the same thing.
+async function runAllSources(): Promise<RunSummary[]> {
+  const summaries: RunSummary[] = [];
+  for (const entry of await registry.list()) {
+    if (!entry.health.ok) continue; // skip sources that need credentials
+    const summary = await executeRun(registry, store, entry.name, defaultParams(entry.name), "report");
+    runs.unshift(summary);
+    summaries.push(summary);
+  }
+  runs.splice(50);
+  saveRuns();
+  return summaries;
+}
+
+async function generateGatedReport(): Promise<GatedReport> {
+  const items = await store.recall({ limit: 80 });
+  const report = await pickSummarizer().summarize(items, new Date().toISOString());
+  // The set of artifact ids/urls actually in memory — the gate grounds every bullet against it.
+  const validIds = new Set<string>();
+  for (const i of items) {
+    const p = i.payload as { id?: string; url?: string } | null;
+    if (p?.id) validIds.add(p.id);
+    if (p?.url) validIds.add(p.url);
+    validIds.add(i.sourceId);
+  }
+  lastReport = { ...report, trust: gateReport(report, validIds) };
+  saveReport();
+  return lastReport;
 }
 
 function json(res: http.ServerResponse, code: number, body: unknown): void {
@@ -129,37 +166,20 @@ const server = http.createServer(async (req, res) => {
       logger.info("control_plane.connect", { source: spec.source, set: Object.keys(vars) }); // keys only, never values
       return json(res, 200, { ok: health.ok, source: spec.source, health });
     }
+    if (req.method === "GET" && url.pathname === "/api/schedule") {
+      return json(res, 200, schedulerState ? { enabled: true, ...schedulerState } : { enabled: false });
+    }
     // Create Report, step 1: fetch every HEALTHY source into shared memory.
     if (req.method === "POST" && url.pathname === "/api/run-all") {
-      const summaries: RunSummary[] = [];
-      for (const entry of await registry.list()) {
-        if (!entry.health.ok) continue; // skip sources that need credentials
-        const summary = await executeRun(registry, store, entry.name, defaultParams(entry.name), "report");
-        runs.unshift(summary);
-        summaries.push(summary);
-      }
-      runs.splice(50);
-      saveRuns();
+      const summaries = await runAllSources();
       logger.info("control_plane.run_all", { sources: summaries.length });
       return json(res, 200, summaries);
     }
-    // Create Report, step 2: synthesize the grounded executive summary from shared memory.
+    // Create Report, step 2: synthesize the grounded, trust-gated executive summary from memory.
     if (req.method === "POST" && url.pathname === "/api/report") {
-      const items = await store.recall({ limit: 80 });
-      const report = await pickSummarizer().summarize(items, new Date().toISOString());
-      // The set of artifact ids/urls actually in memory — the gate grounds every bullet against it.
-      const validIds = new Set<string>();
-      for (const i of items) {
-        const p = i.payload as { id?: string; url?: string } | null;
-        if (p?.id) validIds.add(p.id);
-        if (p?.url) validIds.add(p.url);
-        validIds.add(i.sourceId);
-      }
-      const trust = gateReport(report, validIds);
-      lastReport = { ...report, trust };
-      saveReport();
-      logger.info("control_plane.report", { engine: report.engine, items: report.stats.items, published: trust.published, score: trust.score });
-      return json(res, 200, lastReport);
+      const report = await generateGatedReport();
+      logger.info("control_plane.report", { engine: report.engine, items: report.stats.items, published: report.trust?.published, score: report.trust?.score });
+      return json(res, 200, report);
     }
     if (req.method === "POST" && url.pathname === "/api/run") {
       const { connector, params } = JSON.parse((await readBody(req)) || "{}");
@@ -180,4 +200,25 @@ server.listen(PORT, "127.0.0.1", () => {
   // bound to localhost only — the control plane can write credentials to a local .env
   console.log(`Beacon control plane → http://localhost:${PORT}  (memory: ${backend}${fixtures ? " · DEMO data" : ""})`);
   console.log("A non-engineer can see connectors + health, connect a service, run a report here.");
+
+  // Always-on: run the brief on a schedule (BEACON_SCHEDULE), not just on a click.
+  const scheduleMs = parseInterval(process.env.BEACON_SCHEDULE);
+  if (scheduleMs) {
+    schedulerState = startScheduler(
+      scheduleMs,
+      async () => {
+        await runAllSources();
+        await generateGatedReport();
+        logger.info("scheduler.tick", { intervalMs: scheduleMs, published: lastReport?.trust?.published });
+      },
+      { initialDelayMs: Math.min(2000, scheduleMs) }, // populate quickly on boot
+    );
+    console.log(`⏱  scheduler on — the brief runs every ${process.env.BEACON_SCHEDULE} without anyone clicking.`);
+  }
+
+  // Observability: export metrics over OTLP only when an endpoint is configured (off by default).
+  if (process.env.OTEL_EXPORTER_OTLP_ENDPOINT) {
+    startOtlpExport(process.env.OTEL_EXPORTER_OTLP_ENDPOINT);
+    console.log(`📡 OTLP metrics export → ${process.env.OTEL_EXPORTER_OTLP_ENDPOINT}`);
+  }
 });

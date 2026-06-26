@@ -283,5 +283,5 @@ Two adaptations for this repo:
 
 The inaugural application of the cadence in this repo is
 `todo/exec-brief-slice.md` (the weekly exec brief). When in doubt about how to
-slice something, look at how that workplan is sliced and at
-`evidence/scaffold/` for how evidence is captured.
+slice something, look at how that workplan is sliced and at the captured proofs under
+`v1-walk/evidence/` (real runs on real data).

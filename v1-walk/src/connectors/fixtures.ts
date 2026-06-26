@@ -21,6 +21,7 @@ const SLACK_HISTORY = {
     { type: "message", ts: "1750000003.000300", user: "priya", text: "🚀 Upgrade 19 (Holocene) is live on OP Mainnet — fault proofs enabled for 3 more chains" },
     { type: "message", ts: "1750000002.000200", user: "marcus", text: "Customer ping: Base team asking about the Sequencer Defined Metering rollout timeline" },
     { type: "message", ts: "1750000001.000100", user: "dana", text: "GTM: we close the Acme Chain launch this week 🎉" },
+    { type: "message", ts: "1750000004.000400", user: "sam", text: "Acme procurement lead is jane.doe@acme.com — loop her in before EOW" },
   ],
 };
 const NOTION_SEARCH = {

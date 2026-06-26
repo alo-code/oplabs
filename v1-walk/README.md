@@ -10,6 +10,7 @@ TypeScript**, separate from v0 but interoperable (it emits v0's Artifact shape).
 |---|---|---|
 | **Connector library + central auth** | ③ manual per-source auth · ⑤ no observability | ✅ contract + registry, redacted credential registry, **five connectors** (GitHub + onchain live & zero-key; Slack/Notion/Monday token-gated), uniform telemetry, **bounded retry + rate-limit**. |
 | **Trust gate** (the exec brief earns publication) | grounding · no fabricated metrics · no leaks | ✅ v0's grounding + eval gate ported (`src/trust/gate.ts`) — **Create Report is held, not published**, if ungrounded / a figure is invented / a secret leaks (`npm run trust`). |
+| **Always-on + governance** | ② laptop-sleep · Security/Legal | ✅ a scheduler reruns the brief without a click (`BEACON_SCHEDULE`); **PII redaction + TTL** at write time (`src/memory/policy.ts`); OTLP export opt-in (`src/observability/otlp.ts`, ADR 0003). |
 | **Shared memory** (in-memory + Postgres/pgvector) | ① re-fetch · ④ no shared memory | ✅ one `MemoryStore` interface, two impls (same contract suite), write-through + dedup + semantic recall; cross-agent read proven. |
 | **Control plane** (non-engineer surface) | ⑥ not non-engineer-usable | ✅ a zero-dep HTTP page: one **Create Report** button → fetch every source → live activity feed → a **grounded executive summary** (the case study's exec brief, on the platform), connector health, run history, metrics. |
 

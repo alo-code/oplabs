@@ -470,3 +470,25 @@ npm test
 - Reconciled the specs: connectors-library C3.1 → shipped; v1 docs "What's next" trimmed to the last 3
   (memory governance, scheduling, OTel backend) + a stretch (extract the trust gate to an HTTP service).
   typecheck clean, **63 passed / 1 skipped**. Live report verified gated: published, eval 1.0, 100% grounded.
+
+## 2026-06-25 — the final three, demo-first (tomorrow's interview)
+
+- Reframed around the demo goal: anyone in the call should run v0+v1 easily. Asked first, then built.
+  Decisions: v0 = user drives live n8n (no work from me); v1 = **two front doors** — `./beacon demo`
+  (zero-dep: fixtures + in-memory + a live schedule, no Docker/keys, anyone runs it) and `./beacon up`
+  (Postgres e2e, unchanged). Built all three features so they work on the in-memory path → the live
+  demo can't be derailed by Docker/colima.
+- **Scheduling** (`src/orchestrator/scheduler.ts`): interval scheduler in the control-plane process;
+  `BEACON_SCHEDULE` ("20s"/"5m"/"weekly"/off); `./beacon demo` sets 20s + fires ~2s after boot so the
+  page fills on its own. Run-all + report extracted to shared helpers so a click and a tick do the same
+  thing. Surfaced as a ⏱ pill; verified it self-fired (ticks: 2) — the "always-on" money shot.
+- **Memory governance** (`src/memory/policy.ts`): a `PolicyStore` decorator redacts PII (email/phone/
+  secret) BEFORE storage + optional TTL on recall. Strict phone regex (requires `+`) so it never
+  redacts onchain block heights. Added a demo Slack fixture with a customer email → shows 🔒 in the
+  feed; verified the raw address never reaches the store.
+- **OTLP export** (`src/observability/otlp.ts`): minimal OTLP/HTTP JSON metrics exporter behind the
+  facade, OFF unless `OTEL_EXPORTER_OTLP_ENDPOINT` is set — no SDK, no containers, no demo risk
+  (ADR 0003). Honors "wired, off by default."
+- Updated `DEMO-SCRIPT.md` with the v1 live segment for tomorrow + the run commands. Marked the v1
+  "what's next" all-shipped; M3.3 → shipped in the memory workplan. typecheck clean, **72 passed / 1
+  skipped**. Left `./beacon demo` running as the demo state.

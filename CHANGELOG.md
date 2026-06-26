@@ -28,6 +28,15 @@ to this file (under `## [Unreleased]`) plus an `evidence/<workplan>/` dir.
   ported to `src/trust/gate.ts`) — an ungrounded / fabricated-figure / secret-leaking brief is **held,
   not published** (`npm run trust`; shown on the page). Every connector gets **bounded retry +
   rate-limit** (`src/connectors/resilience.ts`; transient vs terminal via `HttpError`).
+- **Always-on + governance + observability + a zero-dep demo**:
+  - **Scheduling** (`src/orchestrator/scheduler.ts`) — the brief reruns on `BEACON_SCHEDULE`, not just a
+    click; surfaced as a ⏱ pill + growing run history.
+  - **Memory governance** (`src/memory/policy.ts`) — PII redaction (emails/phones/secrets) + optional
+    TTL at write time, shown as 🔒 in the feed (M3.3, the Security/Legal seam).
+  - **OTLP export** (`src/observability/otlp.ts`) — opt-in metrics export behind the facade; off by
+    default, zero extra containers (ADR 0003).
+  - **`./beacon demo`** — one zero-dependency command (no Docker, no keys) that anyone can run: control
+    plane + demo data + a live schedule. (`./beacon up` remains the Postgres end-to-end.)
 - **Local onboarding + authentication**: `docs/onboarding.html` (Quickstart, in the nav); **"Connect a
   service"** in the app and a **`./beacon setup`** CLI wizard over one shared catalog
   (`src/core/services.ts`) — tokens to a gitignored `.env`, live-applied; the server binds localhost

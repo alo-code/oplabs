@@ -132,6 +132,7 @@ export const PAGE = `<!doctype html>
   <span class="role">control plane</span>
   <span class="spacer"></span>
   <span class="live"><span class="dot"></span> live · auto-refresh</span>
+  <span class="pill" id="sched" style="display:none">⏱</span>
   <span class="pill" id="fixtures" style="display:none; border-color:#f3c6cb; color:var(--red);">demo data</span>
   <span class="pill db" id="backend">…</span>
 </div>
@@ -190,6 +191,7 @@ export const PAGE = `<!doctype html>
   function timeAgo(iso){ if(!iso) return ""; var s=Math.max(0,(Date.now()-new Date(iso).getTime())/1000);
     if(s<60) return Math.floor(s)+"s ago"; if(s<3600) return Math.floor(s/60)+"m ago";
     if(s<86400) return Math.floor(s/3600)+"h ago"; return Math.floor(s/86400)+"d ago"; }
+  function fmtMs(ms){ if(ms%3600000===0) return (ms/3600000)+"h"; if(ms%60000===0) return (ms/60000)+"m"; return Math.round(ms/1000)+"s"; }
   function badge(src){ var m={github:["gh","GITHUB"],optimism:["op","OP MAINNET"],slack:["slack","SLACK"],notion:["notion","NOTION"],monday:["monday","MONDAY"]};
     var b=m[src]; return b ? '<span class="badge '+b[0]+'">'+b[1]+'</span>' : '<span class="badge gen">'+esc((src||"").toUpperCase())+'</span>'; }
   function engineLabel(e){ return e==="claude" ? "Claude narrative + grounded sections" : "grounded · no model"; }
@@ -208,6 +210,9 @@ export const PAGE = `<!doctype html>
     renderRuns(await getJSON("/api/runs"));
     renderStats(await getJSON("/api/metrics"), mem.length);
     renderReport(await getJSON("/api/report"));
+    var sch = await getJSON("/api/schedule"); var se = document.getElementById("sched");
+    if(sch.enabled){ se.style.display=""; se.textContent = "⏱ auto-runs every "+fmtMs(sch.intervalMs)+(sch.lastRunAt?" · last "+timeAgo(new Date(sch.lastRunAt).toISOString()):""); }
+    else se.style.display="none";
   }
 
   function renderConns(list){
@@ -230,8 +235,9 @@ export const PAGE = `<!doctype html>
     if(!items.length){ box.appendChild(el("div","empty","Empty — click <b>Create Report</b> to fetch every source.")); return; }
     items.forEach(function(i){
       var p=i.payload||{}; var a=el("a","item"); a.href=p.url||"#"; a.target="_blank"; a.rel="noopener";
+      var redacted = p.redacted ? ' · <span style="color:var(--red)">🔒 PII redacted</span>' : '';
       a.innerHTML = badge(i.source) + '<div style="flex:1;min-width:0"><div class="label">'+esc(p.label||i.sourceId)+'</div>'+
-        '<div class="meta">by '+esc(i.agent||"?")+' · '+esc(timeAgo(i.createdAt))+'</div></div><span class="ext">open ↗</span>';
+        '<div class="meta">by '+esc(i.agent||"?")+' · '+esc(timeAgo(i.createdAt))+redacted+'</div></div><span class="ext">open ↗</span>';
       box.appendChild(a);
     });
   }

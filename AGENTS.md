@@ -18,9 +18,10 @@ be handed to a non-engineer.
 Beacon is the always-on platform that fixes that. The full argument lives in `docs/` (open
 `docs/index.html`) — that's also the **approach document** for the case study.
 
-This repo is **four segregated versions**, one per crawl-walk-run-sprint stage: `v0-crawl/` (the
-only one that runs — the exec brief as an **n8n.cloud workflow** + a tested TS **trust core**),
-and `v1-walk/` + `v2-run/` + `v3-sprint/` (design-only, code-ready). Shared methodology
+This repo is **four segregated versions**, one per crawl-walk-run-sprint stage: `v0-crawl/` (the exec
+brief as an **n8n.cloud workflow** + a tested TS **trust core**) and `v1-walk/` (the platform in
+runnable TS — connectors, shared memory, trust gate, control plane) both **run today**; `v2-run/` +
+`v3-sprint/` are design-only, code-ready. Shared methodology
 (`skills/`, `todo/`, `CADENCE.md`, `notes.md`) and the approach doc (`docs/`) live at the root.
 
 ## How work ships: the cadence
@@ -46,12 +47,12 @@ skills/               AI-driven-development playbooks (shared across versions)
 todo/                 workplans = planned work (committed)
 docs/                 the approach doc — navigable HTML + diagrams → GitHub Pages
 
-v0-crawl/             THE runnable version — n8n workflow + a tested TS trust core
+v0-crawl/             runs today — n8n workflow + a tested TS trust core
   workflow/           n8n.cloud export + the paste-ready Code nodes
   src/trust/          grounding + eval scoring (tested; mirrored into an n8n Code node)
   src/{demo,onchain}.ts  npm run demo (the gate) · npm run onchain (a real OP Mainnet read)
   test/ · evidence/   vitest specs · proof on real data
-v1-walk/              design-only: the platform — connectors, memory, control plane
+v1-walk/              runs today — the platform in TS (connectors · memory · trust gate · control plane); ./beacon demo
 v2-run/               design-only: org-wide & governed — self-serve, governance, polyglot, onchain
 v3-sprint/            design-only: the vision — internal MCP for ambient, governed company-memory access
 ```
@@ -59,8 +60,9 @@ v3-sprint/            design-only: the vision — internal MCP for ambient, gove
 ## Conventions
 
 - **Language**: TypeScript, ESM, Node ≥ 20, strict mode (see `adr/0002`).
-- **Orchestration**: v0 is an n8n.cloud workflow; the only real code is the **trust core**
-  (`v0-crawl/src/trust/`, tested). Changing the workflow? Read `skills/n8n-workflow.md`.
+- **Orchestration**: v0 is an n8n.cloud workflow whose only hand-written code is the tested **trust
+  core** (`v0-crawl/src/trust/`); v1 is a full TS platform (`v1-walk/src/`). Changing the v0 workflow?
+  Read `skills/n8n-workflow.md`.
 - **Validation**: `zod` for all external input — parse, don't trust; the parsed type is the contract.
 - **Secrets**: live in **n8n credentials** (or env) — never in the repo, the workflow JSON, or logs.
 - **Connectors / agents** (v1): follow `skills/connector-pattern.md` / `skills/agent-pattern.md`.

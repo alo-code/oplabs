@@ -21,7 +21,8 @@ usage() {
   cat <<'EOF'
 beacon — run or test any version from the repo root
 
-  ./beacon up                        run v1 fully locally: Postgres+pgvector + control plane
+  ./beacon demo                      zero-dep demo ANYONE can run: control plane + demo data + a live schedule (no Docker/keys)
+  ./beacon up                        run v1 fully locally on Postgres+pgvector (your end-to-end)
   ./beacon down                      stop the local stack (control plane + Postgres)
   ./beacon setup                     connect your services (Slack/Notion/Monday/…) via a CLI wizard
   ./beacon scenario                  multi-source demo runthrough (Slack/Notion/Monday + GitHub/onchain)
@@ -56,6 +57,8 @@ design_only() { echo "• $1 is design-only (no runnable code yet) — see $1/do
 
 case "${1:-help}" in
   help|-h|--help) usage ;;
+  demo)   export BEACON_FIXTURES=1; export BEACON_SCHEDULE="${BEACON_SCHEDULE:-20s}"; run_v1 restart;
+          echo "→ open http://localhost:7878 — it fills in on its own (scheduled). Zero keys, no Docker." ;;
   up)     export BEACON_DB=1; run_v1 restart ;;  # Postgres up (idempotent) + server freshly on it
   down)   export BEACON_DB=1; run_v1 stop ;;     # stop control plane AND Postgres
   setup)  run_v1 setup ;;                         # connect services via the CLI wizard

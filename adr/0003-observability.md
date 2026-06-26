@@ -39,5 +39,7 @@ The **backend destination is deferred** (config, not code). Candidates, by stage
 - (+) LLM cost/quality is first-class from walk, so the ROI story is real before anyone asks.
 - (−) Two systems to read (infra backend + Langfuse) instead of one — accepted: the LLM metrics are
   the ones the case study grades, and forcing them into an infra tool loses fidelity.
-- **Follow-up:** pick the destination, add the OTLP exporter behind the facade, and a docker-compose
-  entry for the chosen backend. Tracked, not built in the thin v1 slice.
+- **Update:** the **OTLP exporter is shipped** (opt-in, `src/observability/otlp.ts`) — off by default,
+  POSTs metrics as OTLP/JSON when `OTEL_EXPORTER_OTLP_ENDPOINT` is set, no extra containers.
+  **Still to pick (with stakeholders):** the destination/backend + a docker-compose entry for it, and
+  the Langfuse layer for LLM cost/eval.
