@@ -24,7 +24,8 @@ becomes "the institutional memory every employee can query."
   policy engine decides. (If the MCP became the access layer, people would route
   *around* governance — so it deliberately doesn't.)
 - **Identity propagation** — the caller's identity rides every call, so v2 access
-  control + the per-user audit log apply. Same question, scoped to what *you* may see.
+  control (`../v2-run/docs/access-control.md`) + the per-user audit log apply. Same
+  question, scoped to what *you* may see — by **mirroring each source's real ACL**.
 - **Grounding still holds** — every answer cites real artifacts; an ungrounded answer
   is refused, even ad-hoc. The trust core is the same spine, one more time.
 - **Read-first** — Sprint opens *read* broadly; *write* / actions stay scoped and

@@ -46,7 +46,11 @@ MCP client   →   Beacon MCP server   →   v2 governance            →   v1 p
 The critical design rule: **governance is the enforcement point; the MCP is not.** If the MCP
 became the access layer, people would talk to it to route *around* v2 policy. So it only
 carries identity in and grounded results out — every decision is still v2's, every call is in
-v2's audit log.
+v2's audit log. Read-side authorization is specified in
+[`../../v2-run/docs/access-control.md`](../../v2-run/docs/access-control.md): the caller arrives
+as a **verified** identity, recall is filtered **before** retrieval against each row's
+**source-mirrored ACL**, and the cited set is revalidated live — so *"ask anything"* never becomes
+*"read anything."*
 
 ## What's the same, what's new (the through-line)
 

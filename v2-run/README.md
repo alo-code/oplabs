@@ -8,8 +8,10 @@ Beacon as *how OP Labs runs AI work* — many workflows, many teams, safely.
 
 - **Self-serve workflow creation** for non-engineers (compose connectors + prompts
   behind guardrails) — the platform stops being engineer-gated.
-- **Governance** — per-workflow budgets, access control, audit log, PII / data-
-  residency policy enforced centrally.
+- **Governance** — per-workflow budgets, [access control](docs/access-control.md), audit log,
+  PII / data-residency policy enforced centrally. Read-side authorization **mirrors each source's
+  real ACL** (no reorg), so V3's MCP scopes every answer to what the caller may already see — V0/V1
+  stay flat because they're executive/admin-only.
 - **Reliability** — SLOs, on-call, graceful degradation, multi-provider model routing.
 - **Polyglot where it pays** — Python (eval/ML-heavy agents), a Go hot path — behind
   the same seams, no rewrite.
