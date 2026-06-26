@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "demo": "tsx src/demo.ts",
-    "onchain": "tsx src/onchain.ts"
+    "onchain": "tsx src/onchain.ts",
+    "prospect:onchain": "tsx skills/prospect-intel/scripts/onchain-intel.ts"
   },
   "dependencies": {
     "viem": "^2.21.0",

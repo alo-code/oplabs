@@ -194,6 +194,81 @@
   These aren't crawl-or-later polish; they ship in the first slice because trust is the
   product.</p>
 
+  <h2 id="authz">Who can see what — authorization (v2 → v3)</h2>
+  <p class="lede">Grounding, evals, and observability make an answer <em>trustworthy</em>. A fourth
+  mechanism makes it <em>safe to share</em>: <b>authorization</b> — who is allowed to see a given
+  answer. When every employee can <a href="versions.html">ask the whole company</a> in plain
+  language, the trust question stops being “is this grounded?” and becomes “is this person allowed to
+  see what it’s grounded in?” A junior asking “what’s our comp plan?” must not get the board deck.
+  This is arguably the load-bearing piece of trust — it’s how “ask anything” never becomes “read
+  anything.”</p>
+
+  <p><b>The principle: mirror the source’s own permissions — don’t reinvent them.</b> Every fact in
+  shared memory inherits the access list of the artifact it came from: a Slack message is readable by
+  that channel’s members, a Notion page by whoever it’s shared with, a Drive file by its permission
+  list. So authorization isn’t a new policy to maintain — it’s the org’s <em>existing</em>
+  permissions, mirrored onto each memory row. The same question is simply scoped to what <em>you</em>
+  may already see.</p>
+
+  <figure>
+    <svg class="dgm" viewBox="0 0 880 168" role="img" aria-label="Authorization flow: verified identity in, grounded and scoped answer out">
+      <defs>
+        <marker id="az" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto">
+          <path class="d-arrow" d="M0,0 L8,4 L0,8 Z"/>
+        </marker>
+      </defs>
+      <g font-size="11.5">
+        <rect class="d-box" x="14" y="46" width="150" height="64" rx="9"/>
+        <text class="d-label" x="89" y="64" text-anchor="middle" font-size="11">1 · CALLER</text>
+        <text class="d-title" x="89" y="82" text-anchor="middle">verified identity</text>
+        <text class="d-label" x="89" y="98" text-anchor="middle" font-size="10">SSO / OIDC email</text>
+
+        <rect class="d-box" x="184" y="46" width="150" height="64" rx="9"/>
+        <text class="d-label" x="259" y="64" text-anchor="middle" font-size="11">2 · BEACON MCP</text>
+        <text class="d-title" x="259" y="82" text-anchor="middle">stamps who</text>
+        <text class="d-label" x="259" y="98" text-anchor="middle" font-size="10">enforces nothing</text>
+
+        <rect class="d-box accent" x="354" y="46" width="150" height="64" rx="9"/>
+        <text class="d-red" x="429" y="64" text-anchor="middle" font-size="11">3 · POLICY · v2</text>
+        <text class="d-title" x="429" y="82" text-anchor="middle">decide + audit</text>
+        <text class="d-label" x="429" y="98" text-anchor="middle" font-size="10">per user, per query</text>
+
+        <rect class="d-box" x="524" y="46" width="150" height="64" rx="9"/>
+        <text class="d-label" x="599" y="64" text-anchor="middle" font-size="11">4 · MEMORY</text>
+        <text class="d-title" x="599" y="82" text-anchor="middle">filter first</text>
+        <text class="d-label" x="599" y="98" text-anchor="middle" font-size="10">row = source’s ACL</text>
+
+        <rect class="d-box accent" x="694" y="46" width="172" height="64" rx="9"/>
+        <text class="d-label" x="780" y="64" text-anchor="middle" font-size="11">5 · ANSWER</text>
+        <text class="d-title" x="780" y="82" text-anchor="middle">grounded + scoped</text>
+        <text class="d-label" x="780" y="98" text-anchor="middle" font-size="10">cite ids you may see</text>
+
+        <line class="d-flow thin" x1="164" y1="78" x2="183" y2="78" marker-end="url(#az)"/>
+        <line class="d-flow thin" x1="334" y1="78" x2="353" y2="78" marker-end="url(#az)"/>
+        <line class="d-flow thin" x1="504" y1="78" x2="523" y2="78" marker-end="url(#az)"/>
+        <line class="d-flow thin" x1="674" y1="78" x2="693" y2="78" marker-end="url(#az)"/>
+      </g>
+    </svg>
+    <figcaption>Identity in, grounded-and-scoped answer out. The MCP establishes <em>who</em>; v2’s
+    policy decides <em>what</em>; memory is filtered by each row’s source-mirrored ACL <em>before</em>
+    retrieval — so the same question from two people returns two scoped answers.</figcaption>
+  </figure>
+
+  <p>Four properties make it trustworthy:</p>
+  <div class="grid">
+    <div class="card"><b>Verified identity, not a claim</b> — the caller arrives as a verified SSO/OIDC identity. The MCP stamps <em>who</em> onto every call and enforces nothing itself; v2’s policy decides — so no one can talk to the MCP to route <em>around</em> governance.</div>
+    <div class="card"><b>Filtered before retrieval</b> — recall is scoped <em>before</em> the search runs, so out-of-clearance facts never enter the model’s context. You can’t leak what was never retrieved — and the cited set is re-checked live, so a just-revoked access is honored.</div>
+    <div class="card"><b>Grounding meets clearance</b> — an answer may only cite artifacts you’re allowed to see. If the only grounding is something you can’t see, the honest answer is <em>“no grounded answer available to you”</em> — never a blurred summary that leaks by inference.</div>
+    <div class="card"><b>Default-deny + per-user audit</b> — anything unlabeled is private, not public; every query is logged per person. That audit trail is also how a mislabel gets caught.</div>
+  </div>
+
+  <p class="note"><span class="k">Staged, like everything else</span><a href="crawl-walk-run.html">v0/v1</a>
+  are executive/admin-only, so they need no per-row rules — full read is correct for that audience.
+  <b>v2</b> introduces the model; <b>v3’s MCP inherits it for free</b>, because the MCP only carries
+  identity in and grounded results out — every decision stays v2’s. The honest hard part is keeping
+  the mirrored permissions <em>fresh</em> as sources change and the labels <em>correct</em>; the
+  per-user audit log is the backstop.</p>
+
   <h2>What exists at each stage</h2>
   <table>
     <tr><th>Seam</th><th>Crawl (now)</th><th>Walk</th><th>Run</th><th>Sprint</th></tr>
@@ -201,7 +276,7 @@
     <tr><td>Memory</td><td>Local file store</td><td>Postgres + pgvector (same interface)</td><td>Governed, multi-tenant</td><td>Queried live, in natural language</td></tr>
     <tr><td>Orchestrator</td><td>Scheduler + run-now</td><td>Service: queues, retries, isolation</td><td>SLOs, on-call, degradation</td><td>+ MCP server (ambient access)</td></tr>
     <tr><td>Control plane</td><td>CLI + static HTML render</td><td>Web UI: trigger, history, output</td><td>Self-serve workflow builder</td><td>Any AI tool — ask inline</td></tr>
-    <tr><td>Governance</td><td>Read-only tokens, no secrets in logs</td><td>Central OAuth/secrets, audit log</td><td>Budgets, access control (<b>mirror each source's ACL</b>), PII/residency policy</td><td>Per-user identity + audit on every call — same question, scoped to what <em>you</em> may see</td></tr>
+    <tr><td>Governance</td><td>Read-only tokens, no secrets in logs</td><td>Central OAuth/secrets, audit log</td><td>Budgets, <a href="#authz">access control</a> (<b>mirror each source's ACL</b>), PII/residency policy</td><td>Per-user identity + audit on every call — same question, scoped to what <em>you</em> may see</td></tr>
   </table>
   <p class="note red"><span class="k">Language seam</span>This prototype is TypeScript on
   purpose (see the <a href="index.html#language">note on the Overview</a>). The seams above
