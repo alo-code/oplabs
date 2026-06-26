@@ -1,0 +1,76 @@
+name: deploy
+
+# Auto-deploy the v1 control plane to the oplabs-demo EC2 box on every push to main.
+# Mechanism: package v1-walk -> S3 -> AWS SSM RunShellScript on the instance (no SSH, no open ports).
+# AWS auth is via GitHub OIDC (no long-lived keys stored in the repo).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'v1-walk/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch: {}
+
+concurrency:
+  group: oplabs-demo-deploy
+  cancel-in-progress: false
+
+permissions:
+  id-token: write   # required for OIDC
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: us-east-1
+      BUCKET: oplabs-demo-deploy-247898554604
+      INSTANCE_ID: i-076c875f97bd7cd8b
+      ROLE_ARN: arn:aws:iam::247898554604:role/oplabs-demo-gha-deploy
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Package v1-walk
+        run: |
+          tar --exclude='node_modules' --exclude='.env' --exclude='*.log' \
+              --exclude='control-plane-runs.json' --exclude='control-plane-report.json' \
+              --exclude='.beacon-control-plane.pid' \
+              -czf v1-walk.tgz v1-walk
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Upload artifact to S3
+        run: aws s3 cp v1-walk.tgz "s3://${BUCKET}/v1-walk.tgz"
+
+      - name: Deploy via SSM
+        run: |
+          cat > params.json <<JSON
+          {"commands":[
+            "set -euo pipefail",
+            "aws s3 cp s3://${BUCKET}/v1-walk.tgz /tmp/v1-walk.tgz",
+            "tar -xzf /tmp/v1-walk.tgz -C /opt/beacon",
+            "chown -R beacon:beacon /opt/beacon/v1-walk",
+            "cd /opt/beacon/v1-walk && sudo -u beacon env HOME=/opt/beacon /usr/bin/npm ci --no-audit --no-fund",
+            "systemctl restart beacon",
+            "sleep 4",
+            "echo beacon=\$(systemctl is-active beacon)",
+            "curl -s -o /dev/null -w 'local-probe=HTTP%{http_code}\\n' http://127.0.0.1:7878/api/connectors"
+          ]}
+          JSON
+          CMD=$(aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "gha deploy ${GITHUB_SHA::7}" \
+            --parameters file://params.json \
+            --query 'Command.CommandId' --output text)
+          echo "SSM command: $CMD"
+          aws ssm wait command-executed --command-id "$CMD" --instance-id "$INSTANCE_ID" || true
+          STATUS=$(aws ssm get-command-invocation --command-id "$CMD" --instance-id "$INSTANCE_ID" --query 'Status' --output text)
+          echo "=== status: $STATUS ==="
+          aws ssm get-command-invocation --command-id "$CMD" --instance-id "$INSTANCE_ID" --query 'StandardOutputContent' --output text
+          test "$STATUS" = "Success"
