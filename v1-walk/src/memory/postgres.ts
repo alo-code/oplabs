@@ -14,6 +14,7 @@ import {
   embedText,
   type MemoryItem,
   type MemoryStore,
+  type Principal,
   type RecallQuery,
   type ScoredItem,
 } from "./store";
@@ -25,7 +26,21 @@ interface Row {
   agent: string | null;
   payload: unknown;
   created_at: Date;
+  source_acl: string[] | null;
   score?: string;
+}
+
+// The read-side authorization predicate, applied BEFORE rows are returned (and, in production, also
+// enforced by the row-level-security policy in migrations/0002_source_acl.sql when the app connects
+// as a non-owner role). Unrestricted rows are visible to all; otherwise the row's ACL must name the
+// caller or one of its groups. Pushes two params (groups text[], id text) and returns the SQL.
+function aclPredicate(principal: Principal, params: unknown[]): string {
+  params.push(principal.groups);
+  const groups = `$${params.length}::text[]`;
+  params.push(principal.id);
+  const id = `$${params.length}`;
+  // unrestricted = SQL null OR jsonb null OR empty array; else the ACL must name the caller or a group.
+  return `(source_acl IS NULL OR source_acl IN ('null'::jsonb, '[]'::jsonb) OR source_acl ?| ${groups} OR source_acl ? ${id})`;
 }
 
 export class PostgresStore implements MemoryStore {
@@ -40,10 +55,18 @@ export class PostgresStore implements MemoryStore {
   async store(item: MemoryItem): Promise<{ stored: boolean }> {
     const embedding = toVector(await this.embeddings.embed(embedText(item)));
     const res = await this.pool.query(
-      `INSERT INTO memory_items (key, source, source_id, agent, payload, embedding)
-       VALUES ($1, $2, $3, $4, $5::jsonb, $6::vector)
+      `INSERT INTO memory_items (key, source, source_id, agent, payload, embedding, source_acl)
+       VALUES ($1, $2, $3, $4, $5::jsonb, $6::vector, $7::jsonb)
        ON CONFLICT (source, source_id) DO NOTHING`,
-      [item.key, item.source, item.sourceId, item.agent ?? null, JSON.stringify(item.payload), embedding],
+      [
+        item.key,
+        item.source,
+        item.sourceId,
+        item.agent ?? null,
+        JSON.stringify(item.payload),
+        embedding,
+        item.acl ? JSON.stringify(item.acl) : null,
+      ],
     );
     const stored = (res.rowCount ?? 0) > 0;
     countStore(stored);
@@ -57,9 +80,10 @@ export class PostgresStore implements MemoryStore {
     if (query.key) (params.push(query.key), where.push(`key = $${params.length}`));
     if (query.source) (params.push(query.source), where.push(`source = $${params.length}`));
     if (query.agent) (params.push(query.agent), where.push(`agent = $${params.length}`));
+    if (query.principal) where.push(aclPredicate(query.principal, params));
     params.push(query.limit ?? 50);
     const sql =
-      `SELECT key, source, source_id, agent, payload, created_at FROM memory_items ` +
+      `SELECT key, source, source_id, agent, payload, created_at, source_acl FROM memory_items ` +
       `${where.length ? "WHERE " + where.join(" AND ") : ""} ORDER BY created_at DESC LIMIT $${params.length}`;
     const res = await this.pool.query<Row>(sql, params);
     metrics.observe("memory_recall_latency_ms", performance.now() - start, { mode: "structured" });
@@ -74,15 +98,17 @@ export class PostgresStore implements MemoryStore {
     return (res.rowCount ?? 0) > 0;
   }
 
-  async semanticRecall(text: string, k = 5, filter?: { key?: string }): Promise<ScoredItem[]> {
+  async semanticRecall(text: string, k = 5, filter?: { key?: string; principal?: Principal }): Promise<ScoredItem[]> {
     const start = performance.now();
     const q = toVector(await this.embeddings.embed(text));
     const params: unknown[] = [q];
-    let filterSql = "";
-    if (filter?.key) (params.push(filter.key), (filterSql = `WHERE key = $${params.length}`));
+    const conds: string[] = [];
+    if (filter?.key) (params.push(filter.key), conds.push(`key = $${params.length}`));
+    if (filter?.principal) conds.push(aclPredicate(filter.principal, params)); // scope BEFORE the ANN search
+    const filterSql = conds.length ? `WHERE ${conds.join(" AND ")}` : "";
     params.push(k);
     const sql =
-      `SELECT key, source, source_id, agent, payload, created_at, 1 - (embedding <=> $1::vector) AS score ` +
+      `SELECT key, source, source_id, agent, payload, created_at, source_acl, 1 - (embedding <=> $1::vector) AS score ` +
       `FROM memory_items ${filterSql} ORDER BY embedding <=> $1::vector LIMIT $${params.length}`;
     const res = await this.pool.query<Row>(sql, params);
     metrics.observe("semantic_recall_latency_ms", performance.now() - start, { mode: "semantic" });
@@ -115,5 +141,6 @@ function rowToItem(r: Row): MemoryItem {
     agent: r.agent ?? undefined,
     payload: r.payload,
     createdAt: r.created_at instanceof Date ? r.created_at.toISOString() : String(r.created_at),
+    acl: Array.isArray(r.source_acl) ? r.source_acl : undefined,
   };
 }

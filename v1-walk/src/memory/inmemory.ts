@@ -11,8 +11,10 @@ import {
   countStore,
   dedupKey,
   embedText,
+  visibleTo,
   type MemoryItem,
   type MemoryStore,
+  type Principal,
   type RecallQuery,
   type ScoredItem,
 } from "./store";
@@ -42,6 +44,7 @@ export class InMemoryStore implements MemoryStore {
     if (query.key) out = out.filter((i) => i.key === query.key);
     if (query.source) out = out.filter((i) => i.source === query.source);
     if (query.agent) out = out.filter((i) => i.agent === query.agent);
+    out = out.filter((i) => visibleTo(i.acl, query.principal)); // read-side authorization
     out.sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
     metrics.observe("memory_recall_latency_ms", performance.now() - start, { mode: "structured" });
     return out.slice(0, query.limit ?? 50).map(toPublic);
@@ -51,11 +54,12 @@ export class InMemoryStore implements MemoryStore {
     return this.items.has(dedupKey(source, sourceId));
   }
 
-  async semanticRecall(text: string, k = 5, filter?: { key?: string }): Promise<ScoredItem[]> {
+  async semanticRecall(text: string, k = 5, filter?: { key?: string; principal?: Principal }): Promise<ScoredItem[]> {
     const start = performance.now();
     const q = await this.embeddings.embed(text);
     let pool = [...this.items.values()];
     if (filter?.key) pool = pool.filter((i) => i.key === filter.key);
+    pool = pool.filter((i) => visibleTo(i.acl, filter?.principal)); // scope BEFORE ranking
     const scored = pool
       .map((i) => ({ ...toPublic(i), score: cosine(q, i.embedding) }))
       .sort((a, b) => b.score - a.score)
@@ -72,5 +76,5 @@ export class InMemoryStore implements MemoryStore {
 }
 
 function toPublic(i: StoredItem): MemoryItem {
-  return { key: i.key, source: i.source, sourceId: i.sourceId, agent: i.agent, payload: i.payload, createdAt: i.createdAt };
+  return { key: i.key, source: i.source, sourceId: i.sourceId, agent: i.agent, payload: i.payload, createdAt: i.createdAt, acl: i.acl };
 }

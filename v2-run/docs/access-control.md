@@ -96,7 +96,17 @@ And the grounding gate inherits a clearance rule: **if the only grounding for a 
 the caller can't see, the answer is "no grounded answer available to you"** — not a blurred summary
 built from material they're not cleared for. "Ask anything" can't leak by inference.
 
-## The data model (sketch)
+## The data model (the seam is real in v1)
+
+This isn't only a sketch — the **read-side seam ships in v1** so v3 has a boundary to lean on, while
+v1 stays exec/admin-only in behavior (nothing populates ACLs yet, recall passes no principal → every
+row unrestricted). It's `../../v1-walk/migrations/0002_source_acl.sql` (columns + GIN index + an RLS
+policy) and a `principal`-scoped `recall` / `semanticRecall` (`../../v1-walk/src/memory/store.ts`'s
+`visibleTo`, enforced by both the in-memory and Postgres stores). The contract — *unrestricted →
+all; no principal → exec/admin sees all; else named-or-grouped, default-deny* — is tested against
+both stores in `../../v1-walk/test/memory/access.test.ts`, and the RLS policy is verified under a
+non-owner role. v2 turns it on by writing `source_acl` at ingestion and passing the caller's
+principal; nothing above memory changes.
 
 Additions to `memory_items` (`../../v1-walk/migrations/0001_memory.sql`):
 

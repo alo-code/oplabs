@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Beacon — Deployment &amp; AWS Architecture (internal)</title>
+<link rel="stylesheet" href="assets/beacon.css" />
+</head>
+<body>
+<header class="site-top"><nav>
+  <a class="brand" href="index.html">Beacon</a>
+  <div class="nav-links">
+    <a href="index.html">Overview</a>
+    <a href="onboarding.html">Quickstart</a>
+    <a href="problem-map.html">Problem map</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="crawl-walk-run.html">Roadmap</a>
+    <a href="versions.html">Versions</a>
+  </div>
+  <div class="nav-right">
+    <a class="nav-op" href="https://github.com/alo-code/oplabs" target="_blank" rel="noopener">Repo ↗</a>
+    <a class="nav-op" href="https://www.oplabs.co/" target="_blank" rel="noopener">for OP Labs ↗</a>
+  </div>
+</nav></header>
+
+<main>
+  <span class="tag">Internal · infra &amp; deployment</span>
+  <h1>Deployment &amp; AWS architecture</h1>
+  <p class="sub">How the live demo at <a href="https://oplabs-demo.daciasec.net" target="_blank" rel="noopener">oplabs-demo.daciasec.net</a>
+  actually runs: the AWS services it uses, how a request is served, how a deploy ships, the
+  identity/trust model — and where each piece goes at production scale. This is an
+  <b>unlinked</b> page (not in the site nav); it documents the <em>real, running</em> system.</p>
+
+  <p class="note red"><span class="k">Scope</span>The live box serves the <b>v1 (walk)</b> control
+  plane — the working slice. <b>v2 / v3 are design-only</b>; their production footprint is the last
+  section (<a href="#scale">Where it goes</a>). Nothing secret is on this page — no tokens, keys, or
+  hashes; only the architecture and the public resource names.</p>
+
+  <h2>The live stack at a glance</h2>
+  <table class="why">
+    <tr><th>Layer</th><th>What runs it</th><th>Detail</th></tr>
+    <tr><td>DNS</td><td>Cloudflare</td><td><code>oplabs-demo.daciasec.net</code> → A record, <b>DNS-only (grey-cloud)</b> so Caddy's ACME challenge reaches the origin</td></tr>
+    <tr><td>TLS + gate</td><td>Caddy</td><td>auto-cert from <b>Let's Encrypt</b> (auto-renew); <b>Basic-Auth</b> perimeter; reverse-proxy <code>:443 → 127.0.0.1:7878</code></td></tr>
+    <tr><td>Compute</td><td>AWS EC2</td><td><b>t4g.micro</b>, AL2023 <b>arm64</b>, 8&nbsp;GB gp3, region <code>us-east-1</code>, account <code>247898554604</code></td></tr>
+    <tr><td>Runtime</td><td>systemd</td><td><code>beacon.service</code> (user <code>beacon</code>) — Node/TS control plane on <code>127.0.0.1:7878</code>, <b>REAL mode</b> (<code>BEACON_SCHEDULE=1h</code>, no fixtures)</td></tr>
+    <tr><td>Memory</td><td>in-process store</td><td>the zero-key <code>MemoryStore</code> on the box (no managed Postgres here) — same interface, so <b>RDS+pgvector is a config swap</b>, not a rewrite</td></tr>
+    <tr><td>Secrets</td><td><code>.env</code> on host</td><td>connector tokens resolved centrally via the credential registry; the <code>Secret</code> type refuses to serialize; redeploys <b>exclude</b> <code>.env</code> so tokens survive</td></tr>
+    <tr><td>Delivery</td><td>GitHub Actions + SSM</td><td>push-model, <b>no SSH</b>, <b>no stored AWS keys</b> (OIDC); ~5-step pipeline below</td></tr>
+    <tr><td>Cost</td><td>—</td><td>≈ <b>$10/mo</b> (instance $6.13 + IPv4 $3.65 + gp3 $0.64)</td></tr>
+  </table>
+
+  <h2>Runtime topology — how a request is served</h2>
+  <figure>
+    <svg class="dgm" viewBox="0 0 900 430" role="img" aria-label="Runtime topology of the deployed control plane">
+      <defs>
+        <marker id="d" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path class="d-arrow" d="M0,0 L9,4.5 L0,9 Z"/>
+        </marker>
+      </defs>
+
+      <!-- client + DNS -->
+      <rect class="d-box" x="16" y="188" width="118" height="58" rx="9"/>
+      <text class="d-title" x="75" y="212" text-anchor="middle" font-size="12">User / browser</text>
+      <text class="d-label" x="75" y="229" text-anchor="middle" font-size="10.5">HTTPS</text>
+
+      <rect class="d-box" x="166" y="188" width="138" height="58" rx="9"/>
+      <text class="d-title" x="235" y="210" text-anchor="middle" font-size="12">Cloudflare DNS</text>
+      <text class="d-label" x="235" y="226" text-anchor="middle" font-size="10">A record · DNS-only</text>
+      <text class="d-label" x="235" y="240" text-anchor="middle" font-size="10">(grey-cloud)</text>
+
+      <path class="d-flow" d="M134,217 L162,217" marker-end="url(#d)"/>
+      <path class="d-flow" d="M304,217 L334,217" marker-end="url(#d)"/>
+
+      <!-- EC2 container -->
+      <rect class="d-box accent" x="334" y="40" width="402" height="368" rx="12"/>
+      <text class="d-eyebrow" x="352" y="62" font-size="10.5">AWS EC2 · t4g.micro · AL2023 arm64 · us-east-1</text>
+      <text class="d-label" x="352" y="80" font-size="10">security group: 80/443 ← world · 22 ← admin IP/32</text>
+
+      <!-- Caddy -->
+      <rect class="d-box" x="354" y="96" width="362" height="60" rx="9"/>
+      <text class="d-title" x="535" y="120" text-anchor="middle" font-size="12.5">Caddy — TLS termination + perimeter</text>
+      <text class="d-label" x="535" y="138" text-anchor="middle" font-size="10.5">Let's Encrypt (auto-renew) · Basic-Auth gate · :80/:443</text>
+
+      <!-- control plane -->
+      <rect class="d-box" x="354" y="188" width="362" height="62" rx="9"/>
+      <text class="d-title" x="535" y="212" text-anchor="middle" font-size="12.5">Beacon control plane</text>
+      <text class="d-label" x="535" y="230" text-anchor="middle" font-size="10.5">systemd beacon.service · Node/TS · 127.0.0.1:7878</text>
+
+      <!-- memory + connectors -->
+      <rect class="d-box" x="354" y="286" width="176" height="58" rx="9"/>
+      <text class="d-title" x="442" y="309" text-anchor="middle" font-size="11.5">in-process memory</text>
+      <text class="d-label" x="442" y="325" text-anchor="middle" font-size="10">store · dedup · recall</text>
+
+      <rect class="d-box" x="540" y="286" width="176" height="58" rx="9"/>
+      <text class="d-title" x="628" y="309" text-anchor="middle" font-size="11.5">connectors</text>
+      <text class="d-label" x="628" y="325" text-anchor="middle" font-size="10">central auth · memory-first</text>
+
+      <!-- internal flow arrows -->
+      <path class="d-flow thin" d="M535,156 L535,184" marker-end="url(#d)"/>
+      <path class="d-flow thin" d="M470,250 L455,282" marker-end="url(#d)"/>
+      <path class="d-flow thin" d="M600,250 L620,282" marker-end="url(#d)"/>
+      <!-- request enters Caddy from the left edge -->
+      <path class="d-flow" d="M334,126 L351,126" marker-end="url(#d)"/>
+
+      <!-- external services -->
+      <rect class="d-box" x="760" y="96" width="124" height="50" rx="9"/>
+      <text class="d-title" x="822" y="116" text-anchor="middle" font-size="11">GitHub API</text>
+      <text class="d-good" x="822" y="132" text-anchor="middle" font-size="9.5">live · no key</text>
+
+      <rect class="d-box" x="760" y="158" width="124" height="50" rx="9"/>
+      <text class="d-title" x="822" y="178" text-anchor="middle" font-size="11">OP Mainnet RPC</text>
+      <text class="d-good" x="822" y="194" text-anchor="middle" font-size="9.5">live · no key</text>
+
+      <rect class="d-box ghost" x="760" y="290" width="124" height="54" rx="9"/>
+      <text class="d-title" x="822" y="311" text-anchor="middle" font-size="10.5">Slack · Notion</text>
+      <text class="d-title" x="822" y="325" text-anchor="middle" font-size="10.5">Monday</text>
+      <text class="d-label" x="822" y="339" text-anchor="middle" font-size="9">token-gated</text>
+
+      <!-- connectors -> external -->
+      <path class="d-flow thin" d="M716,300 C740,290 742,150 758,128" marker-end="url(#d)"/>
+      <path class="d-flow thin" d="M716,312 C742,305 744,200 758,188" marker-end="url(#d)"/>
+      <path class="d-flow thin" d="M716,318 L758,318" marker-end="url(#d)"/>
+    </svg>
+    <figcaption>One small box serves everything. TLS and the access perimeter live in Caddy; the app
+    binds only to loopback. GitHub + onchain read live with no credentials; the other connectors stay
+    dark until a token is pasted through the gated UI.</figcaption>
+  </figure>
+
+  <ol>
+    <li><b>Resolve</b> — Cloudflare answers <code>oplabs-demo.daciasec.net</code> with the instance's public IP. The record is DNS-only (grey-cloud) so Caddy's Let's Encrypt HTTP-01 challenge reaches the origin directly.</li>
+    <li><b>Terminate + gate</b> — Caddy serves TLS (auto-issued, auto-renewed) and enforces the <b>Basic-Auth</b> perimeter. This is the v1 <em>exec/admin-only boundary</em> made real — authorization at the front door, since v1 has no per-row access control (that's <a href="architecture.html">v2</a>).</li>
+    <li><b>Proxy</b> — authenticated requests are reverse-proxied to <code>127.0.0.1:7878</code>. The Node/TS control plane never listens on a public port; only Caddy does.</li>
+    <li><b>Serve</b> — the control plane reads from the in-process memory store and drives connectors. GitHub and OP-Mainnet calls are live and keyless; Slack/Notion/Monday return "no token" until connected.</li>
+  </ol>
+
+  <h2>Delivery — how a deploy ships (push-model, no SSH)</h2>
+  <figure>
+    <svg class="dgm" viewBox="0 0 900 300" role="img" aria-label="CI/CD pipeline using GitHub Actions, S3, and SSM">
+      <defs>
+        <marker id="d2" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path class="d-arrow" d="M0,0 L9,4.5 L0,9 Z"/>
+        </marker>
+      </defs>
+
+      <!-- pipeline row -->
+      <rect class="d-box" x="16" y="44" width="150" height="60" rx="9"/>
+      <text class="d-title" x="91" y="68" text-anchor="middle" font-size="11.5">git push → main</text>
+      <text class="d-label" x="91" y="85" text-anchor="middle" font-size="10">touches v1-walk/**</text>
+
+      <rect class="d-box accent" x="190" y="44" width="158" height="60" rx="9"/>
+      <text class="d-title" x="269" y="68" text-anchor="middle" font-size="11.5">GitHub Actions</text>
+      <text class="d-label" x="269" y="85" text-anchor="middle" font-size="10">package tarball</text>
+
+      <rect class="d-box" x="372" y="44" width="140" height="60" rx="9"/>
+      <text class="d-title" x="442" y="68" text-anchor="middle" font-size="11.5">S3 bucket</text>
+      <text class="d-label" x="442" y="85" text-anchor="middle" font-size="10">deploy artifact</text>
+
+      <rect class="d-box" x="536" y="44" width="150" height="60" rx="9"/>
+      <text class="d-title" x="611" y="68" text-anchor="middle" font-size="11.5">SSM RunShell</text>
+      <text class="d-label" x="611" y="85" text-anchor="middle" font-size="10">send-command · no SSH</text>
+
+      <rect class="d-box accent" x="710" y="44" width="174" height="60" rx="9"/>
+      <text class="d-title" x="797" y="64" text-anchor="middle" font-size="11.5">EC2 instance</text>
+      <text class="d-label" x="797" y="80" text-anchor="middle" font-size="9.5">pull · npm ci · restart</text>
+      <text class="d-label" x="797" y="93" text-anchor="middle" font-size="9.5">· health-probe</text>
+
+      <path class="d-flow" d="M166,74 L188,74" marker-end="url(#d2)"/>
+      <path class="d-flow" d="M348,74 L370,74" marker-end="url(#d2)"/>
+      <path class="d-flow" d="M512,74 L534,74" marker-end="url(#d2)"/>
+      <path class="d-flow" d="M686,74 L708,74" marker-end="url(#d2)"/>
+
+      <!-- trust row -->
+      <text class="d-eyebrow" x="16" y="160" font-size="10.5">IDENTITY &amp; TRUST — NO LONG-LIVED KEYS</text>
+      <rect class="d-box ghost" x="150" y="172" width="280" height="74" rx="10"/>
+      <text class="d-title" x="290" y="195" text-anchor="middle" font-size="11">GitHub OIDC → IAM role</text>
+      <text class="d-label" x="290" y="212" text-anchor="middle" font-size="9.5">oplabs-demo-gha-deploy</text>
+      <text class="d-label" x="290" y="226" text-anchor="middle" font-size="9.5">scoped to repo:alo-code/oplabs @ main</text>
+      <text class="d-label" x="290" y="240" text-anchor="middle" font-size="9.5">assume-role → short-lived creds</text>
+
+      <rect class="d-box ghost" x="600" y="172" width="284" height="74" rx="10"/>
+      <text class="d-title" x="742" y="195" text-anchor="middle" font-size="11">EC2 instance profile</text>
+      <text class="d-label" x="742" y="212" text-anchor="middle" font-size="9.5">oplabs-demo-ec2-role</text>
+      <text class="d-label" x="742" y="226" text-anchor="middle" font-size="9.5">SSM core + S3 read (least privilege)</text>
+
+      <path class="d-flow thin" d="M269,104 L285,170" marker-end="url(#d2)"/>
+      <path class="d-flow thin" d="M797,104 L760,170" marker-end="url(#d2)"/>
+    </svg>
+    <figcaption>The repo never holds an AWS key. GitHub federates via OIDC to a role scoped to this
+    one repo and branch; the box is reached only through SSM (no inbound management port). The
+    instance pulls its own artifact from S3 under a least-privilege instance role.</figcaption>
+  </figure>
+
+  <ol>
+    <li><b>Trigger</b> — a push to <code>main</code> touching <code>v1-walk/**</code> (or manual dispatch). Concurrency-guarded so deploys don't overlap.</li>
+    <li><b>Package</b> — tar <code>v1-walk</code>, excluding <code>node_modules</code>, <code>.env</code>, logs, and run state — so live tokens on the box are never overwritten.</li>
+    <li><b>Authenticate</b> — GitHub's OIDC token is exchanged (via <code>configure-aws-credentials</code>) for short-lived creds on a role trust-scoped to <code>repo:alo-code/oplabs:ref:refs/heads/main</code>. No static secrets exist to leak.</li>
+    <li><b>Stage</b> — upload the tarball to the S3 deploy bucket.</li>
+    <li><b>Apply</b> — <code>ssm send-command</code> runs a shell script <em>on the instance</em>: pull from S3, extract to <code>/opt/beacon</code>, <code>npm ci</code> as <code>beacon</code>, <code>systemctl restart beacon</code>, then curl the local health endpoint. The job fails unless SSM reports <code>Success</code> and the probe returns HTTP&nbsp;200.</li>
+  </ol>
+
+  <h2>Identity &amp; trust (IAM)</h2>
+  <p>Two principals, each least-privileged, no long-lived credentials anywhere:</p>
+  <table class="why">
+    <tr><th>Principal</th><th>How it's trusted</th><th>What it may do</th></tr>
+    <tr><td>GitHub Actions</td><td>OIDC federation to <code>oplabs-demo-gha-deploy</code>, trust policy pinned to the repo + <code>main</code></td><td>write the S3 deploy bucket; <code>ssm send-command</code> to the one instance — nothing else</td></tr>
+    <tr><td>EC2 instance</td><td>instance profile <code>oplabs-demo-ec2-role</code></td><td>be managed by SSM (core); read the S3 deploy bucket — no write, no broad access</td></tr>
+    <tr><td>Operator (human)</td><td>Caddy Basic-Auth at the edge; SSH only from a pinned IP/32 for break-glass</td><td>reach the gated UI; rarely, shell in to debug</td></tr>
+  </table>
+  <p class="note good"><span class="k">Why it's safe by construction</span>No AWS access key lives in the
+  repo or CI. The management plane is SSM, so port 22 isn't needed for deploys (and is pinned to one
+  IP for emergencies). A repo compromise can't assume the deploy role unless it's on <code>main</code>.</p>
+
+  <h2>Required services — and why each</h2>
+  <table class="why">
+    <tr><th>Service</th><th>Role today</th><th>Why this one</th></tr>
+    <tr><td>EC2 (t4g.micro)</td><td>the whole runtime</td><td>crawl-stage right-sizing — arm64 is cheap; one prototype box doesn't justify a cluster <em>yet</em></td></tr>
+    <tr><td>S3</td><td>deploy-artifact staging</td><td>durable hand-off between CI and the box; the instance pulls rather than CI pushing over SSH</td></tr>
+    <tr><td>Systems Manager (SSM)</td><td>remote exec / control plane</td><td>run commands with no inbound port and no SSH key in CI</td></tr>
+    <tr><td>IAM + OIDC</td><td>federated, scoped trust</td><td>short-lived creds keyed to repo+branch — the supply-chain-safe pattern</td></tr>
+    <tr><td>Cloudflare DNS <span class="d-label">(not AWS)</span></td><td>name → IP</td><td>fast, free, and grey-cloud keeps ACME working; AWS Route&nbsp;53 would do the same</td></tr>
+    <tr><td>Let's Encrypt <span class="d-label">(via Caddy)</span></td><td>TLS issuance</td><td>automatic certs + renewal with zero config — no ACM/ALB needed at this size</td></tr>
+  </table>
+
+  <h2 id="scale">Where it goes — production scale</h2>
+  <p>The crawl-walk-run discipline applies to the infrastructure itself. Each current piece has a
+  clean production replacement <em>behind the same seam</em>, so the move is config + IaC, not a
+  rewrite. The drivers are exactly the v2/v3 needs from the
+  <a href="architecture.html">architecture</a>: shared queryable memory, per-user identity, and
+  governed access.</p>
+  <table class="why">
+    <tr><th>Seam</th><th>Today (crawl/walk)</th><th>Production (run/sprint)</th><th>Driver</th></tr>
+    <tr><td>Compute</td><td>one EC2 box, systemd</td><td>ECS/Fargate (or EKS) behind an ALB, multi-AZ</td><td>reliability, SLOs, horizontal scale</td></tr>
+    <tr><td>Memory</td><td>in-process store</td><td><b>RDS Postgres + pgvector</b> (same <code>MemoryStore</code> interface)</td><td>shared, durable, queryable across hosts — and the home of the <b>ACL-scoped</b> rows</td></tr>
+    <tr><td>Secrets</td><td><code>.env</code> on host</td><td>Secrets Manager / SSM Parameter Store + rotation</td><td>central rotation/audit; no secrets on disk</td></tr>
+    <tr><td>Perimeter</td><td>Caddy Basic-Auth</td><td>SSO / OIDC IdP (e.g. Cognito) → <b>per-user identity</b></td><td>v2/v3 access control needs a <em>verified</em> caller, not a shared password</td></tr>
+    <tr><td>TLS / edge</td><td>Caddy + Let's Encrypt</td><td>ACM + ALB (or keep Caddy)</td><td>managed certs, health checks, WAF</td></tr>
+    <tr><td>Delivery</td><td>GitHub Actions → S3 → SSM</td><td>same, + IaC (Terraform/CDK), staged envs, blue/green</td><td>repeatable, reviewable, reversible infra</td></tr>
+    <tr><td>Observability</td><td>structured logs + OTLP hooks</td><td>CloudWatch / OTel collector, alerts on silent failure</td><td>runs, cost, latency, eval score, grounding %</td></tr>
+  </table>
+  <p class="note"><span class="k">The through-line</span>None of these is a rewrite. The app depends
+  on <em>interfaces</em> (a memory store, a credential registry, a connector contract), so "EC2 →
+  Fargate" and "in-memory → RDS" are swaps behind seams that already exist. That's the same reason
+  the v2 access-control model lands as a <em>config</em> flip, not a re-architecture.</p>
+
+  <div class="next">
+    <a href="architecture.html"><div class="k">← Related</div><div class="v">Architecture</div></a>
+    <a href="runbook.html"><div class="k">Related →</div><div class="v">Runbook</div></a>
+  </div>
+</main>
+
+<footer class="site-foot"><div class="foot-in">
+  <span class="foot-brand">Beacon</span>
+  <span>A case study for <a href="https://www.oplabs.co/" target="_blank" rel="noopener">OP Labs</a> · Option 1</span>
+  <span class="foot-tag">“Scale Ethereum, Build Optimism”</span>
+</div></footer>
+</body>
+</html>
