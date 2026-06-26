@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Beacon — Interview Runbook</title>
+<link rel="stylesheet" href="assets/beacon.css" />
+<style>
+  .checklist{list-style:none;padding-left:0}
+  .checklist li{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:15px}
+  .checklist li:last-child{border-bottom:0}
+  .cb{width:18px;height:18px;border:2px solid var(--line);border-radius:4px;flex-shrink:0;margin-top:2px}
+  .step{display:flex;gap:16px;padding:14px 0;border-bottom:1px solid var(--line)}
+  .step:last-child{border-bottom:0}
+  .step-time{flex-shrink:0;font-size:13px;font-weight:700;color:var(--muted);width:52px;padding-top:2px}
+  .step-body{flex:1}
+  .step-body b{display:block;font-size:15px;margin-bottom:4px}
+  .step-body p{margin:4px 0;font-size:14.5px;color:var(--muted)}
+  .qa td:first-child{font-weight:600;white-space:nowrap;font-size:14px;min-width:220px}
+  .qa td:last-child{font-size:14px;color:var(--muted)}
+  .cmd-block{background:var(--surface);border:1px solid var(--line);border-radius:10px;
+    padding:12px 14px;margin:8px 0;font-family:var(--mono);font-size:13px;line-height:1.55;overflow:auto}
+  .cmd-comment{color:var(--muted)}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;
+    letter-spacing:.02em;border:1px solid var(--line);border-radius:999px;
+    padding:2px 10px;background:var(--surface);color:var(--muted)}
+  .pill.red{border-color:var(--red-line);background:var(--red-soft);color:var(--red)}
+  .pill.good{border-color:#b6e4d3;background:#f0faf5;color:var(--good)}
+  .files td:first-child{font-family:var(--mono);font-size:12.5px}
+</style>
+</head>
+<body>
+<!-- NAV: no active link — this page is intentionally unlisted -->
+<header class="site-top"><nav>
+  <a class="brand" href="index.html">Beacon</a>
+  <div class="nav-links">
+    <a href="index.html">Overview</a>
+    <a href="onboarding.html">Quickstart</a>
+    <a href="problem-map.html">Problem map</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="crawl-walk-run.html">Roadmap</a>
+    <a href="versions.html">Versions</a>
+  </div>
+  <a class="nav-op" href="https://www.oplabs.co/" target="_blank" rel="noopener">for OP Labs ↗</a>
+</nav></header>
+
+<main>
+  <span class="tag">Internal · Not linked from nav</span>
+  <h1>Interview runbook</h1>
+  <p class="sub lede">20–30 min live presentation · OP Labs AI Lead Engineer · pre-flight checklist, exact commands, spine, Q&amp;A.</p>
+
+  <!-- ── 1. PRE-FLIGHT ─────────────────────────────────────────────────────── -->
+  <h2>1. Pre-flight checklist</h2>
+  <p class="sub">Complete the night before. Each item is a command you run cold — if it breaks now it won't break in the call.</p>
+
+  <ul class="checklist">
+    <li><span class="cb"></span><span><code>cd v0-crawl &amp;&amp; npm test</code> — passes green (trust core, no keys, no network)</span></li>
+    <li><span class="cb"></span><span><code>cd v0-crawl &amp;&amp; npm run demo</code> — rehearse the held-brief output</span></li>
+    <li><span class="cb"></span><span><code>cd v1-walk &amp;&amp; npm test</code> — 72 pass / 1 skipped</span></li>
+    <li><span class="cb"></span><span><code>cd v1-walk &amp;&amp; ./beacon.sh start</code> → open <code>http://localhost:7878</code> → click <b>Create Report</b> → footer shows <span class="pill good">✓ published · grounded 100% · eval 1</span></span></li>
+    <li><span class="cb"></span><span>Leave the tab open; verify the <b>⏱ auto-runs</b> pill increments on its own (~20 s interval)</span></li>
+    <li><span class="cb"></span><span><code>cd v1-walk &amp;&amp; npm run trust</code> — 4 briefs: 1 published, 3 <span class="pill red">held</span></span></li>
+    <li><span class="cb"></span><span><code>cd v1-walk &amp;&amp; npm run scenario</code> — full multi-source narrated runthrough</span></li>
+    <li><span class="cb"></span><span>n8n.cloud canvas open in a browser tab — a recent completed run visible</span></li>
+    <li><span class="cb"></span><span>Local docs tabbed: <code>docs/index.html</code>, <code>docs/versions.html</code>, <code>docs/architecture.html</code></span></li>
+  </ul>
+
+  <!-- ── 2. TERMINAL SETUP ────────────────────────────────────────────────── -->
+  <h2>2. Terminal setup before the call</h2>
+  <div class="cmd-block">
+<span class="cmd-comment"># Tab 1 — v0 trust gate (ready to run)</span>
+cd ~/Desktop/dev/alo/angello/interviews/optimism-labs-interview/beacon/v0-crawl
+
+<span class="cmd-comment"># Tab 2 — v1 control plane (already running from pre-flight)</span>
+cd ~/Desktop/dev/alo/angello/interviews/optimism-labs-interview/beacon/v1-walk
+./beacon.sh start       <span class="cmd-comment"># idempotent; skip if still up from pre-flight</span>
+<span class="cmd-comment"># → http://localhost:7878 healthy, auto-schedule ticking</span></div>
+
+  <!-- ── 3. PRESENTATION SPINE ────────────────────────────────────────────── -->
+  <h2>3. Presentation spine</h2>
+  <p class="sub">20 min talk + 10 Q&amp;A. Lead with a live moment; let the architecture answer "how."</p>
+
+  <div>
+    <div class="step">
+      <span class="step-time">0:00</span>
+      <div class="step-body">
+        <b>The problem — 90 s</b>
+        <p>One person, a laptop, six sources, no memory, no observability — it sleeps when they do.</p>
+        <p>Open <code>docs/index.html</code> → <em>"I built you something that looks like your product."</em></p>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-time">1:30</span>
+      <div class="step-body">
+        <b>Outcome first — 2 min</b>
+        <p>"Every Monday, leadership and BD get this — grounded, automatic, every line clickable proof."</p>
+        <p>Show a real brief (control plane or <code>v0-crawl/evidence/trust-gate/</code>). Click a citation → real GitHub commit.</p>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-time">3:30</span>
+      <div class="step-body">
+        <b>The wow: watch it refuse to lie — 3 min</b>
+        <div class="cmd-block">cd v0-crawl &amp;&amp; npm run demo</div>
+        <p>"Trust isn't a vibe — it's a gate."</p>
+        <p>Walk through: good brief publishes → fake-PR brief <span class="pill red">held</span> → "40% faster" brief <span class="pill red">held</span>. Runs offline, zero keys.</p>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-time">6:30</span>
+      <div class="step-body">
+        <b>Architecture — 3 min</b>
+        <p>n8n.cloud removes 3 of 6 pains for free: always-on, observability, non-engineer-editable. The only real code is the trust core — the differentiator.</p>
+        <p>Show the n8n canvas briefly. Open <code>docs/architecture.html</code>.</p>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-time">9:30</span>
+      <div class="step-body">
+        <b>Crawl → Walk → Run → Sprint — 4 min</b>
+        <p>Open <code>docs/versions.html</code>. Each stage removes a different bottleneck; you move on a <em>signal</em>, not a date. The trust spine is the through-line to Sprint (an internal MCP server for company memory).</p>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-time">13:30</span>
+      <div class="step-body">
+        <b>v1: the platform, live — 3–4 min</b>
+        <p>Already running. Open <code>http://localhost:7878</code> and walk four moments:</p>
+        <ol>
+          <li><b>One button →</b> Create Report → multi-source grounded exec brief</li>
+          <li><b>Same trust gate →</b> footer shows <span class="pill good">✓ published · grounded 100% · eval 1</span></li>
+          <li><b>Always-on →</b> point at ⏱ pill ticking on its own — <em>"it doesn't sleep when I stop clicking"</em></li>
+          <li><b>Governance →</b> Slack fixture shows 🔒 PII redacted — raw email never hit the store</li>
+          <li><b>(optional)</b> Click <b>+ Connect a service</b> — paste a token, source goes live, no restart</li>
+        </ol>
+        <p>Tie-back: v0 and v1 share the same trust spine. GitHub + onchain are real in both.</p>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-time">17:00</span>
+      <div class="step-body">
+        <b>Stakeholders + metrics — 2 min</b>
+        <p>75 people; the under-served half is Sales/BD. Requirements by survey + scoring, re-run at each gate. Metrics from day one: eval score, grounded %, cost, time saved.</p>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-time">19:00</span>
+      <div class="step-body">
+        <b>The onchain bridge — 90 s</b>
+        <p>The same trust gate that holds an ungrounded brief holds an agent's <em>spend</em> on the OP Stack (smart accounts, session keys, spend policy). Option 1 and Option 2 are one system.</p>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-time">20:30</span>
+      <div class="step-body">
+        <b>What's next — 90 s</b>
+        <p>Honest restraint: don't build the platform until one workflow earns it. Move to v1 when a second team pulls; the Run signal is a non-engineer shipping a brief without engineering help.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 4. FALLBACK COMMANDS ──────────────────────────────────────────────── -->
+  <h2>4. Fallback commands</h2>
+  <p class="sub">If something goes wrong during the demo, these keep you on track.</p>
+
+  <div class="note">
+    <div class="k">Control plane stuck or port busy</div>
+    <div class="cmd-block">cd v1-walk &amp;&amp; ./beacon.sh stop &amp;&amp; ./beacon.sh start</div>
+  </div>
+  <div class="note">
+    <div class="k">No Anthropic key — Create Report still works</div>
+    <code>LocalSummarizer</code> is the default: deterministic, zero-key, fully grounded. No LLM narrative but the brief is still real.
+  </div>
+  <div class="note">
+    <div class="k">Page misbehaves — terminal fallback</div>
+    <div class="cmd-block">cd v1-walk
+npm run scenario     <span class="cmd-comment"># narrated multi-source runthrough, fixture + live GitHub/onchain</span>
+npm run trust        <span class="cmd-comment"># 4-line trust gate: 1 published, 3 held</span></div>
+  </div>
+
+  <!-- ── 5. Q&A ────────────────────────────────────────────────────────────── -->
+  <h2>5. Q&amp;A quick answers</h2>
+
+  <table class="qa">
+    <thead><tr><th>Question</th><th>Answer</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Why TypeScript, not Python/Go?</td>
+        <td>Strongest language for a clean runnable slice; production stays polyglot behind seams. Judgment call, not religion.</td>
+      </tr>
+      <tr>
+        <td>Why n8n, not custom code?</td>
+        <td>It removes 3 of 6 pains for free. The only custom code is the trust core — the differentiator. Build vs. compose judgment.</td>
+      </tr>
+      <tr>
+        <td>How does this earn trust in production?</td>
+        <td>Gate fails closed (held ≠ published), evals from day one, run history is the audit log. Signals gate each stage, not dates.</td>
+      </tr>
+      <tr>
+        <td>Isn't 5 sources scope creep for Crawl?</td>
+        <td>In n8n, a source is a node. The trust core is source-agnostic. More sources scale the brief, not the risk.</td>
+      </tr>
+      <tr>
+        <td>What if the model is down or wrong?</td>
+        <td>Gate fails closed. Model is swappable behind an interface. n8n retries + run history make failures loud.</td>
+      </tr>
+      <tr>
+        <td>Why v0 <em>and</em> v1?</td>
+        <td>v0 proves one workflow earns trust. v1 proves the platform thesis. They share the same trust spine — v0 wasn't rewritten, it was joined.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ── 6. KEY FILES ──────────────────────────────────────────────────────── -->
+  <h2>6. Key files to have open</h2>
+
+  <table class="files">
+    <thead><tr><th>File</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>v0-crawl/src/trust/grounding.ts</td><td>The grounding rule — every bullet must cite a real fetched artifact</td></tr>
+      <tr><td>v1-walk/src/trust/gate.ts</td><td>Same gate, multi-source; shows v0 and v1 share the spine</td></tr>
+      <tr><td>v1-walk/src/connectors/registry.ts</td><td>Central auth seam — the answer to "how does auth scale?"</td></tr>
+      <tr><td>v1-walk/src/memory/store.ts</td><td>One interface, two impls (in-memory + Postgres/pgvector)</td></tr>
+      <tr><td>docs/versions.html</td><td>Crawl / Walk / Run / Sprint slide</td></tr>
+      <tr><td>docs/architecture.html</td><td>System diagram</td></tr>
+      <tr><td>notes.md</td><td>The raw AI-orchestration log — they'll ask about it</td></tr>
+    </tbody>
+  </table>
+
+</main>
+
+<footer class="site-foot">
+  <div class="foot-in">
+    <span class="foot-brand">Beacon</span>
+    <span>OP Labs Case Study · Option 1</span>
+    <span class="foot-tag">Internal — not linked from nav</span>
+  </div>
+</footer>
+</body>
+</html>
