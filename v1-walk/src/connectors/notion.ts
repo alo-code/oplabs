@@ -6,7 +6,7 @@ import { z } from "zod";
 import { defineConnector } from "./base";
 import { credentials, type CredentialRegistry } from "./credentials";
 import { Activity, type Artifact } from "./artifact";
-import { defaultFetch, HttpError, type FetchLike } from "./http";
+import { defaultFetch, HttpError, TerminalError, type FetchLike } from "./http";
 
 const NOTION_VERSION = "2022-06-28";
 
@@ -46,7 +46,7 @@ export function makeNotionConnector(opts: { creds?: CredentialRegistry; fetchImp
     },
     fetch: async ({ query, pageSize }) => {
       const t = token();
-      if (!t) throw new Error("notion: no NOTION_TOKEN configured");
+      if (!t) throw new TerminalError("notion: no NOTION_TOKEN configured");
       const body = JSON.stringify({
         query: query ?? "",
         page_size: pageSize ?? 20,

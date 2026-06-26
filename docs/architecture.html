@@ -17,7 +17,10 @@
     <a href="crawl-walk-run.html">Roadmap</a>
     <a href="versions.html">Versions</a>
   </div>
-  <a class="nav-op" href="https://www.oplabs.co/" target="_blank" rel="noopener">for OP Labs ↗</a>
+  <div class="nav-right">
+    <a class="nav-op" href="https://github.com/alo-code/oplabs" target="_blank" rel="noopener">Repo ↗</a>
+    <a class="nav-op" href="https://www.oplabs.co/" target="_blank" rel="noopener">for OP Labs ↗</a>
+  </div>
 </nav></header>
 
 <main>
@@ -85,16 +88,17 @@
       <text class="d-label" x="793" y="232" text-anchor="middle" font-size="10.5" font-style="italic">cross-cuts</text>
       <text class="d-label" x="793" y="248" text-anchor="middle" font-size="10.5" font-style="italic">every layer</text>
 
-      <!-- Data sources -->
+      <!-- Data sources — solid = built today, ghost = planned -->
       <text class="d-eyebrow" x="20" y="346" font-size="10.5">DATA SOURCES</text>
-      <g font-size="11.5">
-        <rect class="d-box" x="20" y="354" width="113.1" height="40" rx="8"/><text class="d-title" x="76" y="378" text-anchor="middle">Slack</text>
-        <rect class="d-box" x="141.1" y="354" width="113.1" height="40" rx="8"/><text class="d-title" x="197" y="378" text-anchor="middle">HubSpot</text>
-        <rect class="d-box" x="262.3" y="354" width="113.1" height="40" rx="8"/><text class="d-title" x="318" y="378" text-anchor="middle">Notion</text>
-        <rect class="d-box" x="383.4" y="354" width="113.1" height="40" rx="8"/><text class="d-title" x="440" y="378" text-anchor="middle">Drive</text>
-        <rect class="d-box" x="504.5" y="354" width="113.1" height="40" rx="8"/><text class="d-title" x="561" y="378" text-anchor="middle">Calendar</text>
-        <rect class="d-box accent" x="625.7" y="354" width="113.1" height="40" rx="8"/><text class="d-title" x="682" y="378" text-anchor="middle">GitHub</text>
-        <rect class="d-box" x="746.8" y="354" width="113.1" height="40" rx="8"/><text class="d-title" x="803" y="378" text-anchor="middle">onchain</text>
+      <g font-size="11">
+        <rect class="d-box" x="20" y="354" width="98" height="40" rx="8"/><text class="d-title" x="69" y="378" text-anchor="middle">Slack</text>
+        <rect class="d-box" x="126" y="354" width="98" height="40" rx="8"/><text class="d-title" x="175" y="378" text-anchor="middle">Notion</text>
+        <rect class="d-box" x="232" y="354" width="98" height="40" rx="8"/><text class="d-title" x="281" y="378" text-anchor="middle">Monday</text>
+        <rect class="d-box accent" x="338" y="354" width="98" height="40" rx="8"/><text class="d-title" x="387" y="378" text-anchor="middle">GitHub</text>
+        <rect class="d-box" x="444" y="354" width="98" height="40" rx="8"/><text class="d-title" x="493" y="378" text-anchor="middle">onchain</text>
+        <rect class="d-box ghost" x="550" y="354" width="98" height="40" rx="8"/><text class="d-title" x="599" y="378" text-anchor="middle">HubSpot</text>
+        <rect class="d-box ghost" x="656" y="354" width="98" height="40" rx="8"/><text class="d-title" x="705" y="378" text-anchor="middle">Drive</text>
+        <rect class="d-box ghost" x="762" y="354" width="98" height="40" rx="8"/><text class="d-title" x="811" y="378" text-anchor="middle">Calendar</text>
       </g>
 
       <!-- flow arrows -->
@@ -106,7 +110,8 @@
     <figcaption>Read top-down: a non-engineer triggers a workflow; the always-on orchestrator
     runs the agent; the agent composes <b>shared</b> connectors + memory + model; connectors reach the
     real data sources. Observability and evals wrap every layer — trust is not a feature you add later.
-    Solid box = built in crawl; dashed = onboarded in walk. GitHub is the live connector in the working slice.</figcaption>
+    Solid box = built today; dashed = planned. GitHub and onchain run live with zero keys; Slack, Notion,
+    and Monday are built and go live on a token.</figcaption>
   </figure>
 
   <h2>A single run, end to end</h2>
@@ -192,7 +197,7 @@
   <h2>What exists at each stage</h2>
   <table>
     <tr><th>Seam</th><th>Crawl (now)</th><th>Walk</th><th>Run</th><th>Sprint</th></tr>
-    <tr><td>Connectors</td><td>GitHub (real)</td><td>Library: Slack, HubSpot, Notion, Drive, Calendar, onchain</td><td>Self-serve catalog</td><td>Reached via MCP tools</td></tr>
+    <tr><td>Connectors</td><td>GitHub (real)</td><td>Library: Slack, Notion, Monday + onchain (built); HubSpot, Drive, Calendar (planned)</td><td>Self-serve catalog</td><td>Reached via MCP tools</td></tr>
     <tr><td>Memory</td><td>Local file store</td><td>Postgres + pgvector (same interface)</td><td>Governed, multi-tenant</td><td>Queried live, in natural language</td></tr>
     <tr><td>Orchestrator</td><td>Scheduler + run-now</td><td>Service: queues, retries, isolation</td><td>SLOs, on-call, degradation</td><td>+ MCP server (ambient access)</td></tr>
     <tr><td>Control plane</td><td>CLI + static HTML render</td><td>Web UI: trigger, history, output</td><td>Self-serve workflow builder</td><td>Any AI tool — ask inline</td></tr>

@@ -6,7 +6,7 @@ import { z } from "zod";
 import { defineConnector } from "./base";
 import { credentials, type CredentialRegistry } from "./credentials";
 import { Activity, type Artifact } from "./artifact";
-import { defaultFetch, HttpError, type FetchLike } from "./http";
+import { defaultFetch, HttpError, TerminalError, type FetchLike } from "./http";
 
 export const MondayParams = z.object({
   boardId: z.union([z.string(), z.number()]).optional(), // defaults to MONDAY_BOARD_ID
@@ -54,12 +54,12 @@ export function makeMondayConnector(opts: { creds?: CredentialRegistry; fetchImp
     },
     fetch: async ({ boardId, limit }) => {
       const t = token();
-      if (!t) throw new Error("monday: no MONDAY_TOKEN configured");
+      if (!t) throw new TerminalError("monday: no MONDAY_TOKEN configured");
       const board = String(boardId ?? process.env.MONDAY_BOARD_ID ?? "");
-      if (!board) throw new Error("monday: set a boardId (param) or MONDAY_BOARD_ID env");
+      if (!board) throw new TerminalError("monday: set a boardId (param) or MONDAY_BOARD_ID env");
       const query = `{ boards(ids: [${board}]) { id name items_page(limit: ${limit ?? 20}) { items { id name } } } }`;
       const parsed = MondayResp.parse(await gql(t, query));
-      if (parsed.errors?.length) throw new Error(`monday: ${parsed.errors[0]!.message}`);
+      if (parsed.errors?.length) throw new TerminalError(`monday: ${parsed.errors[0]!.message}`);
       const items = parsed.data?.boards?.[0]?.items_page?.items ?? [];
       const now = new Date().toISOString();
       const artifacts: Artifact[] = items.map((it) => ({

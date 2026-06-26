@@ -30,3 +30,13 @@ export class HttpError extends Error {
     this.name = "HttpError";
   }
 }
+
+/** A deterministic failure that retrying cannot fix — missing credential/target, or an API saying
+ *  "no" at the application level (Slack ok:false, Monday GraphQL errors). The resilience layer fails
+ *  these fast instead of backing off 3× and polluting the retry telemetry. */
+export class TerminalError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "TerminalError";
+  }
+}

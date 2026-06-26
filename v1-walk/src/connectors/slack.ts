@@ -6,7 +6,7 @@ import { z } from "zod";
 import { defineConnector } from "./base";
 import { credentials, type CredentialRegistry } from "./credentials";
 import { Activity, type Artifact } from "./artifact";
-import { defaultFetch, HttpError, type FetchLike } from "./http";
+import { defaultFetch, HttpError, TerminalError, type FetchLike } from "./http";
 
 export const SlackParams = z.object({
   channel: z.string().min(1).optional(), // channel ID (e.g. C0123ABCD); defaults to SLACK_CHANNEL
@@ -45,15 +45,15 @@ export function makeSlackConnector(opts: { creds?: CredentialRegistry; fetchImpl
     },
     fetch: async ({ channel, days }) => {
       const t = token();
-      if (!t) throw new Error("slack: no SLACK_TOKEN configured");
+      if (!t) throw new TerminalError("slack: no SLACK_TOKEN configured");
       const ch = channel ?? process.env.SLACK_CHANNEL;
-      if (!ch) throw new Error("slack: set a channel (param) or SLACK_CHANNEL env");
+      if (!ch) throw new TerminalError("slack: set a channel (param) or SLACK_CHANNEL env");
       const oldest = Math.floor((Date.now() - (days ?? 7) * 86_400_000) / 1000);
       const url = `https://slack.com/api/conversations.history?channel=${encodeURIComponent(ch)}&oldest=${oldest}&limit=50`;
       const res = await doFetch(url, { method: "GET", headers: auth(t) });
       if (!res.ok) throw new HttpError(res.status, `slack ${res.status}`); // 429 → retried by the framework
       const parsed = SlackHistory.parse(await res.json());
-      if (!parsed.ok) throw new Error(`slack conversations.history: ${parsed.error ?? "error"}`);
+      if (!parsed.ok) throw new TerminalError(`slack conversations.history: ${parsed.error ?? "error"}`);
       const artifacts: Artifact[] = (parsed.messages ?? [])
         .filter((m) => m.text && (m.type ?? "message") === "message")
         .map((m) => ({

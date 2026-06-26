@@ -17,7 +17,10 @@
     <a href="crawl-walk-run.html" class="active">Roadmap</a>
     <a href="versions.html">Versions</a>
   </div>
-  <a class="nav-op" href="https://www.oplabs.co/" target="_blank" rel="noopener">for OP Labs ↗</a>
+  <div class="nav-right">
+    <a class="nav-op" href="https://github.com/alo-code/oplabs" target="_blank" rel="noopener">Repo ↗</a>
+    <a class="nav-op" href="https://www.oplabs.co/" target="_blank" rel="noopener">for OP Labs ↗</a>
+  </div>
 </nav></header>
 
 <main>
@@ -105,7 +108,7 @@
     <p><b>Goal:</b> turn the one-off into reusable infrastructure so a <em>second</em> and
     <em>third</em> workflow cost days, not weeks.</p>
     <ul>
-      <li><b>Connectors as a library</b> (Slack, HubSpot, Notion, Drive, Calendar, onchain) with centralized OAuth/secret management — kill per-source manual auth for good.</li>
+      <li><b>Connectors as a library</b> (Slack, Notion, Monday, onchain — built; HubSpot, Drive, Calendar — planned) with centralized OAuth/secret management — kill per-source manual auth for good.</li>
       <li><b>Shared memory</b> promoted from a file to Postgres + pgvector (structured facts + semantic recall) so agents stop re-fetching and start sharing context.</li>
       <li><b>Orchestrator</b> as a real service: scheduling, retries, queues, isolation per run.</li>
       <li><b>Observability</b> to a dashboard + alerts; cost/quality SLOs per workflow.</li>

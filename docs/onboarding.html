@@ -18,7 +18,10 @@
     <a href="crawl-walk-run.html">Roadmap</a>
     <a href="versions.html">Versions</a>
   </div>
-  <a class="nav-op" href="https://www.oplabs.co/" target="_blank" rel="noopener">for OP Labs ↗</a>
+  <div class="nav-right">
+    <a class="nav-op" href="https://github.com/alo-code/oplabs" target="_blank" rel="noopener">Repo ↗</a>
+    <a class="nav-op" href="https://www.oplabs.co/" target="_blank" rel="noopener">for OP Labs ↗</a>
+  </div>
 </nav></header>
 
 <main>
@@ -26,6 +29,10 @@
   <h1>Quickstart: from clone to running locally</h1>
   <p class="sub lede">Get the v1 (walk) platform running on your machine in ~2 minutes, then
   authenticate your own services right from the running app and generate an executive report.</p>
+
+  <p><a class="cta" href="https://oplabs-demo.daciasec.net" target="_blank" rel="noopener">▶ See the live demo first ↗</a></p>
+  <p class="sub" style="margin-top:6px">Prefer to look before you install? The hosted control plane is
+  already running — no setup, nothing to clone.</p>
 
   <figure>
     <svg class="dgm" viewBox="0 0 880 120" role="img" aria-label="Clone, run, connect services, create a report">
@@ -102,6 +109,9 @@ cd oplabs
   &ldquo;demo data&rdquo;), alongside live GitHub + onchain:</p>
   <pre>./beacon scenario               # narrated multi-source runthrough (terminal)
 BEACON_FIXTURES=1 ./beacon up   # the control plane with all 5 sources live</pre>
+  <p class="note"><span class="k">Zero setup</span> The same control plane is hosted live at
+  <a href="https://oplabs-demo.daciasec.net" target="_blank" rel="noopener">oplabs-demo.daciasec.net&nbsp;↗</a>
+  — look before you clone.</p>
 
   <h2>Stopping &amp; more</h2>
   <pre>./beacon down                   # stop the control plane AND Postgres

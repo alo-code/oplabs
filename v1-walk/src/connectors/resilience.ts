@@ -7,7 +7,7 @@
 
 import { performance } from "node:perf_hooks";
 import { ZodError } from "zod";
-import { HttpError } from "./http";
+import { HttpError, TerminalError } from "./http";
 import { metrics, logger } from "../observability/telemetry";
 
 export interface RetryPolicy {
@@ -25,9 +25,11 @@ export function makeLimiter(): Limiter {
   return { lastCallAt: 0 };
 }
 
-/** Transient → worth retrying: network/unknown errors and HTTP 429/5xx. Terminal → don't: 4xx, bad shape. */
+/** Transient → worth retrying: network/unknown errors and HTTP 429/5xx. Terminal → don't: 4xx, bad
+ *  shape, missing credential/target, or an API-level "no" — those can't succeed on a retry. */
 export function isRetryable(err: unknown): boolean {
   if (err instanceof ZodError) return false;
+  if (err instanceof TerminalError) return false;
   if (err instanceof HttpError) return err.status === 429 || err.status >= 500;
   return true; // a thrown network error (fetch failed / ECONNRESET / viem RPC) is worth one more try
 }

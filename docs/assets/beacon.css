@@ -77,9 +77,15 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
   font-size:14px;font-weight:600}
 .nav-links a:hover{background:var(--surface);color:var(--ink)}
 .nav-links a.active{color:var(--ink);background:var(--surface)}
-.nav-op{margin-left:auto;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;
+.nav-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.nav-op{font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;
   padding:5px 12px;border:1px solid var(--line);border-radius:999px}
 .nav-op:hover{border-color:var(--ink);color:var(--ink)}
+/* primary call-to-action button (Overview / Quickstart) */
+.cta{display:inline-flex;align-items:center;gap:8px;margin:4px 0;padding:11px 20px;
+  background:var(--ink);color:#fff;font-weight:700;font-size:15px;border-radius:10px;
+  text-decoration:none;border:1px solid var(--ink)}
+.cta:hover{background:var(--red);border-color:var(--red)}
 
 /* 4. Layout primitives --------------------------------------------------- */
 main{max-width:var(--maxw);margin:0 auto;padding:34px 20px 70px}
@@ -167,6 +173,6 @@ figcaption{color:var(--muted);font-size:13px;margin-top:9px;max-width:70ch;
 @media(max-width:680px){
   .grid,.grid-3,.grid-4{grid-template-columns:1fr}
   h1{font-size:27px}
-  .nav-op{margin-left:0}
+  .nav-right{margin-left:0;flex-wrap:wrap}
   .foot-tag{margin-left:0}
 }

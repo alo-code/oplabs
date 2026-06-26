@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { z } from "zod";
 import { withResilience, makeLimiter, isRetryable } from "../../src/connectors/resilience";
-import { HttpError } from "../../src/connectors/http";
+import { HttpError, TerminalError } from "../../src/connectors/http";
 import { defineConnector } from "../../src/connectors/base";
 import { metrics } from "../../src/observability/telemetry";
 
@@ -44,11 +44,23 @@ describe("connector resilience", () => {
     expect(calls).toBe(1);
   });
 
+  it("does NOT retry a TerminalError (missing credential/target, API-level no)", async () => {
+    let calls = 0;
+    await expect(
+      withResilience("x", { retry: { attempts: 3 }, state: makeLimiter(), sleep: noSleep }, async () => {
+        calls++;
+        throw new TerminalError("slack: no SLACK_TOKEN configured");
+      }),
+    ).rejects.toThrow(/SLACK_TOKEN/);
+    expect(calls).toBe(1); // failed fast, no backoff, no retry-metric noise
+  });
+
   it("classifies retryable vs terminal correctly", () => {
     expect(isRetryable(new HttpError(429, ""))).toBe(true);
     expect(isRetryable(new HttpError(500, ""))).toBe(true);
     expect(isRetryable(new HttpError(404, ""))).toBe(false);
     expect(isRetryable(new z.ZodError([]))).toBe(false);
+    expect(isRetryable(new TerminalError("no token"))).toBe(false);
     expect(isRetryable(new Error("fetch failed"))).toBe(true);
   });
 
