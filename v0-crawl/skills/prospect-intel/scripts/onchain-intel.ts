@@ -20,8 +20,12 @@ import { createPublicClient, http, isAddress, formatEther, type Address } from "
 import { mainnet, optimism } from "viem/chains";
 import type { Artifact } from "../../../src/trust/schema";
 
-const l1 = createPublicClient({ chain: mainnet, transport: http() });
-const op = createPublicClient({ chain: optimism, transport: http() });
+// Keyless public RPCs, pinned with a short timeout + single retry so the demo stays
+// snappy and reliable on a fresh clone (the chain defaults can hang). A read that
+// still fails just degrades to a "skipped" note — it never blocks the brief.
+const RPC_OPTS = { timeout: 8000, retryCount: 1 } as const;
+const l1 = createPublicClient({ chain: mainnet, transport: http("https://ethereum-rpc.publicnode.com", RPC_OPTS) });
+const op = createPublicClient({ chain: optimism, transport: http("https://mainnet.optimism.io", RPC_OPTS) });
 
 // Just the two read actions we need — typed structurally so the L1 and OP clients
 // (different Chain types, so different concrete PublicClient types) both satisfy it.
@@ -33,9 +37,19 @@ type ChainReader = {
 /** Resolve an .eth name on L1, or accept a 0x-address as-is. */
 async function resolveTarget(input: string): Promise<{ address: Address; ens?: string }> {
   if (input.toLowerCase().endsWith(".eth")) {
-    const address = await l1.getEnsAddress({ name: input });
-    if (!address) throw new Error(`ENS name "${input}" did not resolve on L1`);
-    return { address, ens: input };
+    try {
+      const address = await l1.getEnsAddress({ name: input });
+      if (!address) throw new Error("name did not resolve on L1");
+      return { address, ens: input };
+    } catch (e) {
+      // ENS resolution goes through the universal resolver's offchain (CCIP) gateway,
+      // which can be slow/unavailable on public RPCs. Fail with an actionable message
+      // rather than hanging the brief — pass the 0x address directly.
+      throw new Error(
+        `could not resolve "${input}" (${e instanceof Error ? e.message : e}). ` +
+          `Pass the 0x address directly: npm run prospect:onchain -- 0x…`,
+      );
+    }
   }
   if (isAddress(input)) return { address: input as Address };
   throw new Error(`"${input}" is neither a 0x-address nor an .eth name`);
@@ -66,7 +80,9 @@ async function readChain(
 }
 
 async function main(): Promise<void> {
-  const input = process.argv[2] || "vitalik.eth";
+  // Default to a well-known public address so the no-arg demo always works without the
+  // slower ENS/CCIP path. Pass your prospect's 0x address or .eth name as the first arg.
+  const input = process.argv[2] || "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"; // vitalik.eth, by address
   console.error(`prospect-intel · onchain footprint for "${input}" (read-only, public RPCs)\n`);
 
   const { address, ens } = await resolveTarget(input);

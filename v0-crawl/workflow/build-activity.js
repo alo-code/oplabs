@@ -77,9 +77,18 @@ for (const it of items) {
     add({ kind: "event", source: "calendar", id: String(j.id), url: j.htmlLink, label: j.summary });
     continue;
   }
-  // HubSpot deal/contact (stub): { id, properties: { dealname | name } }
+  // HubSpot deal (CRM): { id, properties: { dealname|name, dealstage, amount, ... } }.
+  // Primary source for the deal decision-log. Build a clickable deal URL when
+  // $env.HUBSPOT_PORTAL_ID is set, and fold stage/amount into the label so a
+  // decision-log line that mentions them stays grounded (the figure is in a cited label).
   if (j.id && j.properties && (j.properties.dealname || j.properties.name)) {
-    add({ kind: "deal", source: "hubspot", id: String(j.id), url: undefined, label: j.properties.dealname || j.properties.name });
+    const p = j.properties;
+    const portal = $env.HUBSPOT_PORTAL_ID;
+    const url = portal ? "https://app.hubspot.com/contacts/" + portal + "/deal/" + j.id : undefined;
+    const bits = [p.dealname || p.name];
+    if (p.dealstage) bits.push("stage: " + p.dealstage);
+    if (p.amount) bits.push("amount: " + p.amount);
+    add({ kind: "deal", source: "hubspot", id: String(j.id), url, label: bits.filter(Boolean).join(" — ") });
     continue;
   }
 }

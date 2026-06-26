@@ -1,4 +1,15 @@
-# v0-crawl workflow — the weekly exec brief (n8n)
+# v0-crawl workflows (n8n)
+
+Two scheduled n8n workflows that share **one** tested trust core:
+
+- **Weekly exec brief** (`exec-brief.json`) — *what shipped* across GitHub/Notion/Slack/Drive → eng + BD framings to two Slack channels. (Documented first, below.)
+- **Deal decision-log** (`deal-decision-log.json`) — *what we decided on deals* from HubSpot → `#deal-log`. (See [Deal decision-log](#deal-decision-log) — it reuses most of the exec brief.)
+
+Both follow the same spine — `Schedule → sources → Build activity → Claude → Trust gate → render → Slack` — and the trust gate plus the `{ id, url }` grounding contract are **identical** between them. That's the crawl→walk thesis in miniature: the second workflow is cheap because the first's trust core and normalization are reusable. The decision-log section below notes only what differs.
+
+---
+
+## Weekly exec brief
 
 This is the orchestration for v0: a scheduled n8n workflow that fetches real activity
 from the case-study sources, asks Claude for one **grounded** brief, runs it through the
@@ -32,10 +43,12 @@ citable pool.
 | File | Goes into |
 |---|---|
 | `exec-brief.json` | Import as the workflow (graph + HTTP/Slack/IF nodes) |
-| `build-activity.js` | Paste into the **Build activity** Code node |
-| `trust-node.js` | Paste into the **Trust gate** Code node |
+| `build-activity.js` | Paste into the **Build activity** Code node — **shared by both workflows** |
+| `trust-node.js` | Paste into the **Trust gate** Code node — **shared by both workflows** |
 | `render-eng.js` | Paste into the **Render eng** Code node |
 | `render-bd.js` | Paste into the **Render BD** Code node |
+| `deal-decision-log.json` | Import as the second workflow (HubSpot → `#deal-log`) |
+| `render-decision-log.js` | Paste into the decision-log's **Render decision-log** Code node |
 
 ## Setup (production)
 

@@ -1,0 +1,215 @@
+{
+  "name": "Beacon — Deal Decision-Log (v0-crawl)",
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [ { "field": "cronExpression", "expression": "0 16 * * 5" } ] }
+      },
+      "id": "22222222-0000-0000-0000-000000000001",
+      "name": "Schedule (Fri 16:00)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [ 0, 400 ],
+      "notes": "Weekly, end-of-week deal review. Same spine as the exec brief; only the source (HubSpot) and the framing (decisions, not shipped features) change."
+    },
+    {
+      "parameters": {
+        "resource": "deal",
+        "operation": "getAll",
+        "returnAll": false,
+        "limit": 50,
+        "additionalFields": {}
+      },
+      "id": "22222222-0000-0000-0000-000000000002",
+      "name": "HubSpot: deals",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.1,
+      "position": [ 460, 400 ],
+      "onError": "continueRegularOutput",
+      "credentials": { "hubspotApi": { "id": "REPLACE_HUBSPOT", "name": "HubSpot (private app token)" } },
+      "notes": "PRIMARY source. Native HubSpot. Latest 50 deals; add a hs_lastmodifieddate 'after' filter to scope to deals that MOVED this week (that's where the decisions are). Set $env.HUBSPOT_PORTAL_ID so build-activity.js can build clickable deal URLs."
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "channel",
+        "operation": "history",
+        "channelId": { "__rl": true, "value": "={{ $env.SLACK_DEALS_CHANNEL_ID }}", "mode": "id" },
+        "returnAll": false,
+        "limit": 50,
+        "filters": { "oldest": "={{ $now.minus({ days: 7 }).toISO() }}" }
+      },
+      "id": "22222222-0000-0000-0000-000000000003",
+      "name": "Slack: #deals",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [ 460, 560 ],
+      "disabled": true,
+      "notes": "STUB (disabled) — context for the 'why'. To enable: add the Slack OAuth2 credential, set $env.SLACK_DEALS_CHANNEL_ID, enable, and connect into 'Build activity'. Permalinks use the shared $env.SLACK_WORKSPACE + $env.SLACK_CHANNEL_ID (see workflow/README)."
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": { "__rl": true, "value": "={{ $env.NOTION_DEALS_DATABASE_ID }}", "mode": "id" },
+        "returnAll": false,
+        "limit": 50,
+        "options": {}
+      },
+      "id": "22222222-0000-0000-0000-000000000004",
+      "name": "Notion: deal notes",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [ 460, 720 ],
+      "disabled": true,
+      "notes": "STUB (disabled). Deal notes / account pages. To enable: add the Notion credential, share the DB with the integration, set $env.NOTION_DEALS_DATABASE_ID, enable, and connect into 'Build activity'."
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "getAll",
+        "calendar": { "__rl": true, "value": "={{ $env.GCAL_ID || 'primary' }}", "mode": "id" },
+        "returnAll": false,
+        "limit": 50,
+        "options": {
+          "timeMin": "={{ $now.minus({ days: 7 }).toISO() }}",
+          "timeMax": "={{ $now.toISO() }}"
+        }
+      },
+      "id": "22222222-0000-0000-0000-000000000005",
+      "name": "Calendar: meetings",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [ 460, 880 ],
+      "disabled": true,
+      "notes": "STUB (disabled). Customer meetings that drove a decision. To enable: add the credential, set $env.GCAL_ID, enable, and connect into 'Build activity' (mapper already handles events)."
+    },
+    {
+      "parameters": {
+        "jsCode": "// PASTE workflow/build-activity.js here (the SAME file the exec brief uses).\n// It already maps HubSpot deals, Slack, Notion, Calendar to { kind, source, id, url, label }.\nthrow new Error('Build activity not configured — paste build-activity.js');"
+      },
+      "id": "22222222-0000-0000-0000-000000000006",
+      "name": "Build activity",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [ 720, 400 ],
+      "notes": "Reused verbatim from the exec brief — normalization is source-agnostic. A deal/Slack/Notion item just joins the citable pool."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "anthropic-version", "value": "2023-06-01" },
+          { "name": "content-type", "value": "application/json" }
+        ] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: $env.ANTHROPIC_MODEL || 'claude-sonnet-4-6', max_tokens: 1800, system: 'See workflow/README.md (Deal decision-log) for the full system prompt: produce STRICT JSON matching the Brief schema (sections[].bullets[] with text, whyItMatters, citations). text = the DECISION on a deal; whyItMatters = the rationale or next step; every bullet must cite the deal id or url it rests on. Sections by movement (Advanced / Won / Lost / At risk). Never invent an amount, %, or multiplier that is not in a cited artifact label.', messages: [ { role: 'user', content: 'Deal activity (only cite these):\\n' + JSON.stringify($json.activity) } ] }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "22222222-0000-0000-0000-000000000007",
+      "name": "Claude: summarize",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [ 940, 400 ],
+      "credentials": { "httpHeaderAuth": { "id": "REPLACE_ANTHROPIC", "name": "Anthropic (x-api-key: …)" } }
+    },
+    {
+      "parameters": {
+        "jsCode": "// PASTE workflow/trust-node.js here (the SAME tested gate the exec brief uses).\n// Source-agnostic: it grounds deal-log bullets exactly like brief bullets.\nthrow new Error('Trust gate not configured — paste trust-node.js');"
+      },
+      "id": "22222222-0000-0000-0000-000000000008",
+      "name": "Trust gate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [ 1160, 400 ],
+      "notes": "Reused verbatim. An ungrounded decision (e.g. a deal id not in the activity) or an invented amount is held, not posted."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "loose", "version": 2 },
+          "combinator": "and",
+          "conditions": [ {
+            "id": "cond-pass",
+            "leftValue": "={{ $json.pass }}",
+            "rightValue": "",
+            "operator": { "type": "boolean", "operation": "true", "singleValue": true }
+          } ]
+        },
+        "options": {}
+      },
+      "id": "22222222-0000-0000-0000-000000000009",
+      "name": "Gate passed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [ 1380, 400 ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// PASTE workflow/render-decision-log.js here. Returns { channel, text } for #deal-log.\nthrow new Error('Render decision-log not configured — paste render-decision-log.js');"
+      },
+      "id": "22222222-0000-0000-0000-00000000000a",
+      "name": "Render decision-log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [ 1600, 300 ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "channelId": { "__rl": true, "value": "={{ $json.channel }}", "mode": "name" },
+        "messageType": "text",
+        "text": "={{ $json.text }}",
+        "otherOptions": {}
+      },
+      "id": "22222222-0000-0000-0000-00000000000b",
+      "name": "Post → #deal-log",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [ 1820, 300 ],
+      "credentials": { "slackOAuth2Api": { "id": "REPLACE_SLACK", "name": "Slack (OAuth2)" } }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "channelId": { "__rl": true, "value": "#beacon-ops", "mode": "name" },
+        "messageType": "text",
+        "text": "=Beacon held this week's deal decision-log (gate failed). Reasons: {{ JSON.stringify($json.eval.notes) }}",
+        "otherOptions": {}
+      },
+      "id": "22222222-0000-0000-0000-00000000000c",
+      "name": "Held: notify ops",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [ 1600, 560 ],
+      "credentials": { "slackOAuth2Api": { "id": "REPLACE_SLACK", "name": "Slack (OAuth2)" } }
+    }
+  ],
+  "connections": {
+    "Schedule (Fri 16:00)": { "main": [ [
+      { "node": "HubSpot: deals", "type": "main", "index": 0 }
+    ] ] },
+    "HubSpot: deals": { "main": [ [ { "node": "Build activity", "type": "main", "index": 0 } ] ] },
+    "Build activity": { "main": [ [ { "node": "Claude: summarize", "type": "main", "index": 0 } ] ] },
+    "Claude: summarize": { "main": [ [ { "node": "Trust gate", "type": "main", "index": 0 } ] ] },
+    "Trust gate": { "main": [ [ { "node": "Gate passed?", "type": "main", "index": 0 } ] ] },
+    "Gate passed?": { "main": [
+      [ { "node": "Render decision-log", "type": "main", "index": 0 } ],
+      [ { "node": "Held: notify ops", "type": "main", "index": 0 } ]
+    ] },
+    "Render decision-log": { "main": [ [ { "node": "Post → #deal-log", "type": "main", "index": 0 } ] ] }
+  }
+}

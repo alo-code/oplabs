@@ -8,9 +8,10 @@
 import { z } from "zod";
 
 // One kind per source shape. commit/pr = GitHub · issue = Monday/Linear ·
-// page = Notion · message = Slack · file = Drive. Adding a source = add a kind +
-// an n8n fetch node; grounding/evals don't change (they key off id + url).
-export const ARTIFACT_KINDS = ["commit", "pr", "issue", "page", "message", "file", "onchain"] as const;
+// page = Notion · message = Slack · file = Drive · deal = HubSpot (deal decision-log) ·
+// event = Calendar. Adding a source = add a kind + an n8n fetch node; grounding/evals
+// don't change (they key off id + url).
+export const ARTIFACT_KINDS = ["commit", "pr", "issue", "page", "message", "file", "onchain", "deal", "event"] as const;
 
 /** A real, linkable unit of source activity a brief is allowed to cite. */
 export const ArtifactSchema = z.object({

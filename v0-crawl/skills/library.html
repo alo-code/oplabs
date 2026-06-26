@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Beacon — Skill Library · OP Labs Case Study</title>
+<link rel="stylesheet" href="../../docs/assets/beacon.css" />
+</head>
+<body>
+<!-- This page lives with the skills (v0-crawl/skills/), so nav links are relative back
+     to the approach site. It is the non-engineer "download a skill" surface — pain ⑥. -->
+<header class="site-top"><nav>
+  <a class="brand" href="../../docs/index.html">Beacon</a>
+  <div class="nav-links">
+    <a href="../../docs/index.html">Overview</a>
+    <a href="../../docs/architecture.html">Architecture</a>
+    <a href="library.html" class="active">Skill library</a>
+  </div>
+  <div class="nav-right">
+    <a class="nav-op" href="https://github.com/alo-code/oplabs" target="_blank" rel="noopener">Repo ↗</a>
+    <a class="nav-op" href="https://www.oplabs.co/" target="_blank" rel="noopener">for OP Labs ↗</a>
+  </div>
+</nav></header>
+
+<main>
+  <span class="tag">OP Labs Case Study · Option 1</span>
+  <h1>Beacon Skill Library</h1>
+  <p class="sub lede">Download a skill that applies to your role and run it in your own AI
+  tool. No engineer in the loop — every skill grounds its output in real, clickable sources,
+  the same way the exec brief does.</p>
+
+  <p class="note good"><span class="k">What this page is</span>
+  This is Beacon's answer to pain ⑥ — <b>"can't hand it to a non-engineer."</b> Each card is a
+  self-contained <b>skill</b> (a folder with a <code>SKILL.md</code>) a teammate copies into
+  their Claude/agent tool. It's the on-demand <em>front door</em>; the always-on, scheduled
+  workflows (exec brief, deal decision-log) run in n8n. These are <b>product skills</b> — not
+  to be confused with the engineering playbooks in the repo root.</p>
+
+  <h2>Find yours — skills by role</h2>
+  <p class="sub">OP Labs is ~75 people, roughly half Sales/BD and half Engineering. The
+  catalog grows one role at a time; here's who can self-serve what today.</p>
+  <div class="grid">
+    <div class="card"><span class="tag">Sales / BD / GTM</span><br/><b>1 skill — live</b><br/>
+      <span style="color:var(--muted)">prospect-intel — research before any call.</span></div>
+    <div class="card"><span class="tag">Recruiting</span><br/><b>planned</b><br/>
+      <span style="color:var(--muted)">candidate-intel — grounded candidate prep.</span></div>
+    <div class="card"><span class="tag">Engineering</span><br/><b>planned</b><br/>
+      <span style="color:var(--muted)">repo/onchain-intel — context for a review.</span></div>
+    <div class="card"><span class="tag">Exec / Leadership</span><br/><b>planned</b><br/>
+      <span style="color:var(--muted)">account-intel — one-page account state.</span></div>
+  </div>
+
+  <h2>Available now</h2>
+  <div class="card">
+    <span class="tag">Sales / BD / GTM</span>
+    <h3 style="margin:8px 0 4px">prospect-intel</h3>
+    <p>Turn a prospect — a company, a person, or an onchain entity — into a <b>grounded,
+    citable one-page intel brief</b> before a call, a deal review, or a qualification pass.
+    Every factual line cites a real source; nothing is invented (the same trust contract as
+    the exec brief).</p>
+    <p><b>What's real, not mocked:</b> a read-only onchain footprint on <b>Ethereum L1 + OP
+    Mainnet</b> — balances and activity from public RPCs, no keys, no transactions — so an
+    onchain claim cites a block-explorer link a reviewer can click. For an OP Stack prospect,
+    "do they actually transact, and where?" is qualifying signal.</p>
+    <p>
+      <a class="cta" href="prospect-intel/SKILL.md">▶ Open the skill (SKILL.md)</a>
+    </p>
+    <p class="sub">Install — copy the folder into your agent tool, then run the onchain step:</p>
+<pre><code>cp -r v0-crawl/skills/prospect-intel ~/.claude/skills/prospect-intel
+cd v0-crawl && npm install
+npm run prospect:onchain -- vitalik.eth      # or a 0x address</code></pre>
+  </div>
+
+  <h2>On the roadmap</h2>
+  <p class="sub">Honest placeholders — the catalog shape, not yet built. Each follows the same
+  <code>SKILL.md</code> + grounding contract, so the second and third skills cost days, not
+  weeks (that's the crawl → walk thesis, applied to skills).</p>
+  <div class="grid-3">
+    <div class="card"><span class="tag">Recruiting</span><br/><b>candidate-intel</b><br/>
+      <span style="color:var(--muted)">Grounded candidate prep: public work, talks, repos — cited, no guesses.</span></div>
+    <div class="card"><span class="tag">Engineering</span><br/><b>repo/onchain-intel</b><br/>
+      <span style="color:var(--muted)">Context before a review: recent PRs, related onchain activity, cited.</span></div>
+    <div class="card"><span class="tag">Exec / Leadership</span><br/><b>account-intel</b><br/>
+      <span style="color:var(--muted)">One-page account state from the deal log + sources, on demand.</span></div>
+  </div>
+
+  <h2>How a skill earns trust</h2>
+  <p>Every skill in this library inherits Beacon's grounding contract — the same logic the
+  n8n workflows enforce in <code>v0-crawl/src/trust/</code> (tested, 5/5):</p>
+  <div class="grid">
+    <div class="card">📎 <b>Cite a real source</b> — every factual claim links to something the
+      researcher actually opened. No citation → it's an "unknown", not a fact.</div>
+    <div class="card">🚫 <b>Never invent a number</b> — no funding figure, %, or multiplier
+      unless it's in a cited source. The #1 way sales prep burns trust.</div>
+    <div class="card">⛓️ <b>Onchain is read, not guessed</b> — balances/activity come from a
+      real RPC read and cite a block-explorer URL.</div>
+    <div class="card">🔒 <b>No secrets / PII</b> — the brief never carries a credential or a
+      private email (the gate hard-fails on these).</div>
+  </div>
+
+  <div class="next">
+    <a href="../README.md"><div class="k">← Back</div><div class="v">v0-crawl README</div></a>
+    <a href="../../docs/architecture.html"><div class="k">Then →</div><div class="v">Architecture</div></a>
+  </div>
+</main>
+
+<footer class="site-foot"><div class="foot-in">
+  <span class="foot-brand">Beacon</span>
+  <span>A case study for <a href="https://www.oplabs.co/" target="_blank" rel="noopener">OP Labs</a> · Option 1</span>
+  <span class="foot-tag">“Scale Ethereum, Build Optimism”</span>
+</div></footer>
+</body>
+</html>
